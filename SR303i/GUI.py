@@ -1,5 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 import sys
+from utils import *
+import time
 
 class Cooler(QtCore.QThread):
 
@@ -18,6 +20,13 @@ class Cooler(QtCore.QThread):
         '''
         把cooling的事情寫在這
         '''
+        Andor_Spectrometer.setT(self.temp)
+        sleep_t = 1
+        status = 0
+        while status != 20036:
+            status, temp = Andor_Spectrometer.readT()
+            self.msg.emit("Current Temp is " + str(temp) + "\n")
+        
         self.finish.emit() # 最後發送finish的訊號
 
 class TakeSignal(QtCore.QThread):
@@ -61,7 +70,7 @@ class Ui_MainWindow(object):
 
         self._TG_set()
 
-        self.log = QtWidgets.QPlainTextEdit(MainWindow)
+        self.log = QtWidgets.QPlainTextEdit(MainWindow) # 秀出儀器記錄
         self.log.move(50, 300)
         self.log.resize(400, 200)
 
@@ -112,6 +121,9 @@ class Ui_MainWindow(object):
         
         
 if __name__ == "__main__":
+
+    SR303i = Andor_Spectrometer()
+    
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
