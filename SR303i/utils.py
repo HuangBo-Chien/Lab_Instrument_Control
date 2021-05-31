@@ -4,14 +4,14 @@ class Andor_Spectrometer:
 
     def __init__(self):
         self.path = r"C:\Users\admin\AppData\Local\Programs\Python\Python38\Lib\site-packages\pylablib\aux_libs\devices\libs\x64\\"
-        self.atmcd64d = cdll.LoadLibrary(self.path + "atmcd64d.dll")
-        self.atshamrock = cdll.LoadLibrary(self.path + "atshamrock.dll")
-        self.ShamrockCIF = cdll.LoadLibrary(self.path + "ShamrockCIF.dll")
-        self.ATSHAMROCKCS = cdll.LoadLibrary(self.path + "ATSHAMROCKCS.dll")
+##        self.atmcd64d = cdll.LoadLibrary(self.path + "atmcd64d.dll")
+##        self.atshamrock = cdll.LoadLibrary(self.path + "atshamrock.dll")
+##        self.ShamrockCIF = cdll.LoadLibrary(self.path + "ShamrockCIF.dll")
+##        self.ATSHAMROCKCS = cdll.LoadLibrary(self.path + "ATSHAMROCKCS.dll")
         
-        self._DRV_SUCC()
-        self.DEV_Info()
-        self.read_set()
+##        self._DRV_SUCC()
+##        self.DEV_Info()
+##        self.read_set()
 
     def _DRV_SUCC(self):
     
@@ -96,10 +96,7 @@ class Andor_Spectrometer:
 ##        )
           
     def setT(self, temp):
-        status = self.atmcd64d.CoolerON()
-        if status == 20075:
-            return "CoolerOn Problem"
-##            print("It's cooler problem")
+        self.cooleron()
         c_temp = c_int(temp)
 ##        print("Temp setpoint is %d" %(temp))
         status = self.atmcd64d.SetTemperature(c_temp)
@@ -113,15 +110,31 @@ class Andor_Spectrometer:
         self.atmcd64d.GetTemperature.argtypes = [POINTER(c_int)]
         status = self.atmcd64d.GetTemperature(byref(current_temp)) # 如果status == 20036表示溫度穩定
         return status, current_temp.value
+
+    def cooleron(self):
+        status = self.atmcd64d.CoolerON()
+        if status == 20075:
+            return "CoolerOn Problem"
+##            print("It's cooler problem")
+
+    def cooleroff(self):
+        status = self.atmcd64d.CoolerOFF()
+        if status == 20075:
+            return "CoolerOFF Problem"
+
+##    def Set_Acq(self):
+        
         
 if __name__ == "__main__":
-    import time
     SR303i = Andor_Spectrometer()
-    SR303i.setT(-20)
-    while True:
-        s, t = SR303i.readT()
-        print("Temp = %d" %(t))
-        if s == 20036:
-            print("Temp is stable")
-            break
-        time.sleep(1)
+##    import time
+    
+##    SR303i.setT(-20)
+##    while True:
+##        s, t = SR303i.readT()
+##        print("Temp = %d" %(t))
+##        if s == 20036:
+##            print("Temp is stable")
+##            break
+##        time.sleep(1)
+    
