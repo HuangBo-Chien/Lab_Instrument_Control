@@ -4,7 +4,7 @@ class Andor_Spectrometer:
 
     def __init__(self):
         self.path = r"C:\Users\admin\AppData\Local\Programs\Python\Python38\Lib\site-packages\pylablib\aux_libs\devices\libs\x64\\"
-        self.ATMCD64D = cdll.LoadLibrary(self.path + "ATMCD64D.dll")
+        self.atmcd64d = cdll.LoadLibrary(self.path + "atmcd64d.dll")
         self.atshamrock = cdll.LoadLibrary(self.path + "atshamrock.dll")
         self.ShamrockCIF = cdll.LoadLibrary(self.path + "ShamrockCIF.dll")
         self.ATSHAMROCKCS = cdll.LoadLibrary(self.path + "ATSHAMROCKCS.dll")
@@ -46,10 +46,10 @@ class Andor_Spectrometer:
             if status == 20202:
                 return True
             else:
-                print("EepromGetOpticalParams Error")
+##                print("EepromGetOpticalParams Error")
                 return False
         else:
-            print("GetSerialNumber Error!")
+##            print("GetSerialNumber Error!")
             return False
 
     def read_set(self):
@@ -81,35 +81,43 @@ class Andor_Spectrometer:
         self.ShamrockCIF.ShamrockGetGratingInfo(0, self.G, self.lines, self.blaze, byref(self.home), byref(self.offset))
         self.ShamrockCIF.ShamrockGetGratingOffset(0, self.G, byref(self.GO))
 
-        print("0 False / 1 True = %d\n"\
-          "Turret = %d\n"\
-          "No Gratings = %d\n"\
-          "Grating = %d\n"\
-          "Detector Offset = %d\n"\
-          "Grating Offset = %d\n"\
-          "lines/mm = %f\n"\
-          "blaze = %s\n"\
-          "home = %d\n"\
-          "offset = %d\n"\
-          %(self.GP.value, self.Turret.value, self.NG.value, self.G.value, self.DO.value,
-            self.GO.value, self.lines.value, self.blaze.value, self.home.value, self.offset.value)
-        )
+##        print("0 False / 1 True = %d\n"\
+##          "Turret = %d\n"\
+##          "No Gratings = %d\n"\
+##          "Grating = %d\n"\
+##          "Detector Offset = %d\n"\
+##          "Grating Offset = %d\n"\
+##          "lines/mm = %f\n"\
+##          "blaze = %s\n"\
+##          "home = %d\n"\
+##          "offset = %d\n"\
+##          %(self.GP.value, self.Turret.value, self.NG.value, self.G.value, self.DO.value,
+##            self.GO.value, self.lines.value, self.blaze.value, self.home.value, self.offset.value)
+##        )
           
     def setT(self, temp):
+        status = self.atmcd64d.CoolerON()
+        if status == 20075:
+            return "CoolerOn Problem"
+##            print("It's cooler problem")
         c_temp = c_int(temp)
-        self.ATMCD64D.SetTemperature(c_temp)
-        self.ATMCD64D.CoolerON()
+##        print("Temp setpoint is %d" %(temp))
+        status = self.atmcd64d.SetTemperature(c_temp)
+        if status == 20075:
+            return "Set Temp Problem"
+##            print("It's set temp problem")    
+        
     
     def readT(self):
         current_temp = c_int(0)
-        self.ATMCD64D.GetTemperature.argtypes = [POINTER(c_int)]
-        status = self.ATMCD64D.GetTemperature(byref(current_temp)) # 如果status == 20036表示溫度穩定
+        self.atmcd64d.GetTemperature.argtypes = [POINTER(c_int)]
+        status = self.atmcd64d.GetTemperature(byref(current_temp)) # 如果status == 20036表示溫度穩定
         return status, current_temp.value
         
 if __name__ == "__main__":
     import time
     SR303i = Andor_Spectrometer()
-    SR303i.setT(-40)
+    SR303i.setT(-20)
     while True:
         s, t = SR303i.readT()
         print("Temp = %d" %(t))
