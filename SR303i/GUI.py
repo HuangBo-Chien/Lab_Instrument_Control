@@ -71,6 +71,9 @@ class Ui_MainWindow(object):
 
         self.cooler = Cooler(self.SR303i)
 
+        self.tab = QtWidgets.QTabWidget(MainWindow)
+        self.tab.resize(300, 300)
+        self.tab.move(300, 50)
         self._TG_set()
 
         self.log = QtWidgets.QPlainTextEdit(MainWindow) # 秀出儀器記錄
@@ -79,6 +82,14 @@ class Ui_MainWindow(object):
 
         '''輸出訊息'''
         self.cooler.msg.connect(self.show_msg)
+
+        self.test = QtWidgets.QGroupBox()
+        self.test.setTitle("aaaa")
+        self.tab.addTab(self.test, "Test1")
+        self.test2 = QtWidgets.QGroupBox()
+        self.test2.setTitle("bbbb")
+        self.tab.addTab(self.test2, "Test2")
+        
         
 
     def _TG_set(self):
