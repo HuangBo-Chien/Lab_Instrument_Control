@@ -9,10 +9,11 @@ class Cooler(QtCore.QThread):
     temp = QtCore.pyqtSignal(object, object, str) # 傳輸溫度資料
     msg = QtCore.pyqtSignal(str) # 傳訊息
     
-    def __init__(self):
+    def __init__(self, dev):
 
         super(Cooler, self).__init__()
         self.temp = 100
+        self.dev = dev
 
     def run(self):
 ##        print("Coolr start working.\nTemperature Setpoint = %f." %(self.temp))
@@ -20,13 +21,13 @@ class Cooler(QtCore.QThread):
         '''
         把cooling的事情寫在這
         '''
-        Andor_Spectrometer.setT(self.temp)
-        sleep_t = 1
+        self.dev.setT(self.temp)
         status = 0
         while status != 20036:
-            status, temp = Andor_Spectrometer.readT()
+            status, temp = self.dev.readT()
             self.msg.emit("Current Temp is " + str(temp) + "\n")
-        
+            time.sleep(1)
+        self.msg.emit("Temperature is stable.")
         self.finish.emit() # 最後發送finish的訊號
 
 class TakeSignal(QtCore.QThread):
@@ -66,7 +67,9 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle("SR303i")
         MainWindow.setGeometry(400, 400, 800, 600) # 視窗大小800 X 600，視窗左上角在(400, 400)的位置
 
-        self.cooler = Cooler()
+        self.SR303i = Andor_Spectrometer()
+
+        self.cooler = Cooler(self.SR303i)
 
         self._TG_set()
 
@@ -121,8 +124,6 @@ class Ui_MainWindow(object):
         
         
 if __name__ == "__main__":
-
-    SR303i = Andor_Spectrometer()
     
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
