@@ -1,17 +1,18 @@
 from ctypes import *
+import numpy as np
 
 class Andor_Spectrometer:
 
     def __init__(self):
         self.path = r"C:\Users\admin\AppData\Local\Programs\Python\Python38\Lib\site-packages\pylablib\aux_libs\devices\libs\x64\\"
-##        self.atmcd64d = cdll.LoadLibrary(self.path + "atmcd64d.dll")
-##        self.atshamrock = cdll.LoadLibrary(self.path + "atshamrock.dll")
-##        self.ShamrockCIF = cdll.LoadLibrary(self.path + "ShamrockCIF.dll")
-##        self.ATSHAMROCKCS = cdll.LoadLibrary(self.path + "ATSHAMROCKCS.dll")
+        self.atmcd64d = cdll.LoadLibrary(self.path + "atmcd64d.dll")
+        self.atshamrock = cdll.LoadLibrary(self.path + "atshamrock.dll")
+        self.ShamrockCIF = cdll.LoadLibrary(self.path + "ShamrockCIF.dll")
+        self.ATSHAMROCKCS = cdll.LoadLibrary(self.path + "ATSHAMROCKCS.dll")
         
-##        self._DRV_SUCC()
-##        self.DEV_Info()
-##        self.read_set()
+        self._DRV_SUCC()
+        self.DEV_Info()
+        self.read_set()
 
     def _DRV_SUCC(self):
     
@@ -81,19 +82,19 @@ class Andor_Spectrometer:
         self.ShamrockCIF.ShamrockGetGratingInfo(0, self.G, self.lines, self.blaze, byref(self.home), byref(self.offset))
         self.ShamrockCIF.ShamrockGetGratingOffset(0, self.G, byref(self.GO))
 
-##        print("0 False / 1 True = %d\n"\
-##          "Turret = %d\n"\
-##          "No Gratings = %d\n"\
-##          "Grating = %d\n"\
-##          "Detector Offset = %d\n"\
-##          "Grating Offset = %d\n"\
-##          "lines/mm = %f\n"\
-##          "blaze = %s\n"\
-##          "home = %d\n"\
-##          "offset = %d\n"\
-##          %(self.GP.value, self.Turret.value, self.NG.value, self.G.value, self.DO.value,
-##            self.GO.value, self.lines.value, self.blaze.value, self.home.value, self.offset.value)
-##        )
+        print("0 False / 1 True = %d\n"\
+          "Turret = %d\n"\
+          "No Gratings = %d\n"\
+          "Grating = %d\n"\
+          "Detector Offset = %d\n"\
+          "Grating Offset = %d\n"\
+          "lines/mm = %f\n"\
+          "blaze = %s\n"\
+          "home = %d\n"\
+          "offset = %d\n"\
+          %(self.GP.value, self.Turret.value, self.NG.value, self.G.value, self.DO.value,
+            self.GO.value, self.lines.value, self.blaze.value, self.home.value, self.offset.value)
+        )
           
     def setT(self, temp):
         self.cooleron()
@@ -123,9 +124,13 @@ class Andor_Spectrometer:
             return "CoolerOFF Problem"
 
     def camera_ini(self):
-        s = create_string_buffer(64)
-        self.atmcd64d.Initialize(s)
+        path = r"C:\Users\admin\AppData\Local\Programs\Python\Python38\Lib\site-packages\pylablib\aux_libs\devices\libs\x64\\"
+        s = c_wchar_p("")
+        print(self.atmcd64d.Initialize(s))
         time.sleep(2)
+
+    def ShutDown(self):
+        self.atmcd64d.ShutDown()
 
     def Read_Mode(self, Mode = 0, Cen_Row = 128, Height = 20, Num_of_Row = 5, offset = 0, Pos = [None], hbin = 1, vbin = 1, hstart = 1, hend = 1024, vstart = 1, vend = 256):
         c_Mode = c_int(Mode)
@@ -197,6 +202,11 @@ class Andor_Spectrometer:
         if Mode == 0: # Internal
             self.atmcd64d.SetTriggerMode(c_Mode)
 
+    def Gate_Mode(self, Mode):
+        c_Mode = c_int(Mode)
+        if Mode == 1:
+            self.atmcd64d.SetGateMode(c_Mode)
+
     def Acq_Start(self):
         self.atmcd64d.StartAcquisition()
 
@@ -208,48 +218,76 @@ class Andor_Spectrometer:
         '''
         c_status = c_int()
         r = self.atmcd64d.GetStatus(byref(c_status))
-        return c_status.value()
+        return r, c_status.value
 
     def Fetch_Data(self):
         x, y = self.Get_Det()
-        c_data_arr = c_int * 1024
-        c_size = c_ulong(x) # not sure if this can still work in Image mode
-        self.atmcd64d.GetAcquiredData(byref(c_data_arr), c_size)
+        
+##        print("x = %d" %(x))
+##        data = np.arange(0, x, 1)
+##        dataPtr = data.ctypes.data_as(POINTER(c_int))
+##        print(data)
+        c_data_arr = (c_int * (5 * x))()
+##        c_data_arr = c_int(0)
+        c_size = c_ulong(5 * x) # not sure if this can still work in Image mode
+##        self.atmcd64d.GetAcquiredData(byref(c_data_arr), c_size)
+        self.atmcd64d.GetAcquiredData.argtypes = [POINTER(c_int), c_ulong]
+##        print(len(data))
+        status = self.atmcd64d.GetAcquiredData(c_data_arr, c_size)
+        print("data status = ", status)
         return c_data_arr
 
     def Get_Det(self):
         x_pix = c_int()
         y_pix = c_int()
         self.atmcd64d.GetDetector(byref(x_pix), byref(y_pix))
-        return x_pix.value(), y_pix.value()
+        return x_pix.value, y_pix.value
         
 if __name__ == "__main__":
+    import time
+    import matplotlib.pyplot as plt
     SR303i = Andor_Spectrometer()
 
-    SR303i.camera_ini()
-    SR303i.ReadMode(Mode = 1, Cen_Row = 215, Height = 50, offset = 0)
-    SR303i.Acq_Mode(Mode = 1, Exp_Time = 1)
-    SR303i.Tri_Mode(Mode = 0)
-    SR303i.Acq_Start()
-    while True:
-        status = SR303i.GetStatus()
-        print(status)
-        if status != 20072:
-            break
-        else:
+    try:
+        SR303i.setT(-40)
+        while True:
+            s, t = SR303i.readT()
+            print("Temp = %d" %(t))
+            if s == 20036:
+                print("Temp is stable")
+                break
             time.sleep(1)
-    data = SR303i.Fetch_Data()
-    for i in range(len(data)):
-        print("%d data is %d" %(i, data[i]))
-    print("Finished")
-##    import time
+        SR303i.camera_ini()
+        SR303i.Acq_Mode(Mode = 1, Exp_Time = 1)
+        SR303i.Read_Mode(Mode = 1, Cen_Row = 215, Height = 50, offset = 0)
+        SR303i.Gate_Mode(Mode = 1)
+        SR303i.Tri_Mode(Mode = 0)
+        SR303i.Acq_Start()
+        while True:
+            r, status = SR303i.Get_Status()
+            print("status = %d" %(status))
+            print("r = %d" %(r))
+            if status != 20072:
+                break
+            else:
+                time.sleep(1)
+##        for i in range(1600*400):
+##            ss = SR303i.Fetch_Data(i)
+##            if ss != 20067:
+##                print("i = ", i)
+##                break
+        data = SR303i.Fetch_Data()
+        plt.plot(data)
+##        print(data[0])
+##        for i in range(len(data)):
+##            print("%d data is %d" %(i, data[i]))
+        print("Finished")
+        SR303i.cooleroff()
+        SR303i.ShutDown()
+    except:
+        SR303i.cooleroff()
+        SR303i.ShutDown()
+    plt.show()
     
-##    SR303i.setT(-20)
-##    while True:
-##        s, t = SR303i.readT()
-##        print("Temp = %d" %(t))
-##        if s == 20036:
-##            print("Temp is stable")
-##            break
-##        time.sleep(1)
+
     
