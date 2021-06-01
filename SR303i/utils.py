@@ -122,11 +122,126 @@ class Andor_Spectrometer:
         if status == 20075:
             return "CoolerOFF Problem"
 
-##    def Set_Acq(self):
-        
+    def camera_ini(self):
+        s = create_string_buffer(64)
+        self.atmcd64d.Initialize(s)
+        time.sleep(2)
+
+    def Read_Mode(self, Mode = 0, Cen_Row = 128, Height = 20, Num_of_Row = 5, offset = 0, Pos = [None], hbin = 1, vbin = 1, hstart = 1, hend = 1024, vstart = 1, vend = 256):
+        c_Mode = c_int(Mode)
+        if Mode == 0: # FVB
+            self.atmcd64d.SetReadMode(c_Mode)
+        elif Mode == 1: # Multi Track
+            self.atmcd64d.SetReadMode(c_Mode)
+            c_NoR = c_int(Num_of_Row)
+            c_Height = c_int(Height)
+            c_offset = c_int(offset)
+            c_bottom = c_int()
+            c_gap = c_int()
+            self.atmcd64d.SetMultiTrack(c_NoR, c_Height, c_offset, byref(c_bottom), byref(c_gap))
+        elif Mode == 2: # Random Track
+            self.atmcd64d.SetReadMode(c_Mode)
+            c_NoR = c_int(Num_of_Row)
+            c_pos = c_int(Pos) # May have bugs
+            self.atmcd64d.SetRandomTracks(c_NoR, c_pos)
+        elif Mode == 3: # Single Track
+            self.atmcd64d.SetReadMode(c_Mode)
+            c_Cen_Row = c_int(Cen_Row)
+            c_Height = c_int(Height)
+            self.atmcd64d.SetSingleTrack(c_Cen_Row, c_Height)
+        elif Mode == 4: # Image
+            self.atmcd64d.SetReadMode(c_Mode)
+            c_hbin = c_int(hbin)
+            c_vbin = c_int(vbin)
+            c_hstart = c_int(hstart)
+            c_hend = c_int(hend)
+            c_vstart = c_int(vstart)
+            c_vend = c_int(vend)
+            self.atmcd64d.SetImage(c_hbin, c_vbin, c_hstart, c_hend, c_vstart, c_vend)
+        elif Mode == 5: # Cropped
+            'I will finish this part someday...'
+            pass
+
+    def Acq_Mode(self, Mode = 1, Exp_Time = 1, ACyc_Num = 1, ACyc_Time = 1, KCyc_Num = 1, KCyc_Time = 1):
+        c_Mode = c_int(Mode)
+        c_exp = c_float(Exp_Time)
+        if Mode == 1: # Single
+            self.atmcd64d.SetAcquisitionMode(c_Mode)
+            self.atmcd64d.SetExposureTime(c_exp)
+        elif Mode == 2: # Accumulate
+            c_acycn = c_int(ACyc_Num)
+            c_acyct = c_float(ACyc_Time)
+            self.atmcd64d.SetAcquisitionMode(c_Mode)
+            self.atmcd64d.SetExposureTime(c_exp)
+            self.atmcd64d.SetNumberAccumulations(c_acycn)
+            self.atmcd64d.SetAccumulationCycleTime(c_acyct) # Only works if user selects "Internal" trigger
+        elif Mode == 3: # Kinetic Series
+            c_acycn = c_int(ACyc_Num)
+            c_acyct = c_float(ACyc_Time)
+            c_kcycn = c_int(KCyc_Num)
+            c_kcyct = c_float(KCyc_Time)
+            self.atmcd64d.SetAcquisitionMode(c_Mode)
+            self.atmcd64d.SetExposureTime(c_exp)
+            self.atmcd64d.SetNumberAccumulations(c_acycn)
+            self.atmcd64d.SetAccumulationCycleTime(c_acyct)
+            self.atmcd64d.SetNumberKinetics(c_kcycn)
+            self.atmcd64d.SetKineticycleTime(c_kcyct)
+        elif Mode == 5: # Run Till Abort
+            c_kcyct = c_float(0)
+            self.atmcd64d.SetAcquisitionMode(c_Mode)
+            self.atmcd64d.SetExposureTime(c_exp)
+            self.atmcd64d.SetKineticycleTime(c_kcyct)
+
+    def Tri_Mode(self, Mode):
+        c_Mode = c_int(Mode)
+        if Mode == 0: # Internal
+            self.atmcd64d.SetTriggerMode(c_Mode)
+
+    def Acq_Start(self):
+        self.atmcd64d.StartAcquisition()
+
+    def Get_Status(self):
+        '''
+        status code
+        20072 --> DRV_ACQUIRING
+        20073 --> DRV_IDLE
+        '''
+        c_status = c_int()
+        r = self.atmcd64d.GetStatus(byref(c_status))
+        return c_status.value()
+
+    def Fetch_Data(self):
+        x, y = self.Get_Det()
+        c_data_arr = c_int * 1024
+        c_size = c_ulong(x) # not sure if this can still work in Image mode
+        self.atmcd64d.GetAcquiredData(byref(c_data_arr), c_size)
+        return c_data_arr
+
+    def Get_Det(self):
+        x_pix = c_int()
+        y_pix = c_int()
+        self.atmcd64d.GetDetector(byref(x_pix), byref(y_pix))
+        return x_pix.value(), y_pix.value()
         
 if __name__ == "__main__":
     SR303i = Andor_Spectrometer()
+
+    SR303i.camera_ini()
+    SR303i.ReadMode(Mode = 1, Cen_Row = 215, Height = 50, offset = 0)
+    SR303i.Acq_Mode(Mode = 1, Exp_Time = 1)
+    SR303i.Tri_Mode(Mode = 0)
+    SR303i.Acq_Start()
+    while True:
+        status = SR303i.GetStatus()
+        print(status)
+        if status != 20072:
+            break
+        else:
+            time.sleep(1)
+    data = SR303i.Fetch_Data()
+    for i in range(len(data)):
+        print("%d data is %d" %(i, data[i]))
+    print("Finished")
 ##    import time
     
 ##    SR303i.setT(-20)
