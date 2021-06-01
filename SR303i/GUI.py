@@ -72,31 +72,29 @@ class Ui_MainWindow(object):
         self.cooler = Cooler(self.SR303i)
 
         self.tab = QtWidgets.QTabWidget(MainWindow)
-        self.tab.resize(300, 300)
-        self.tab.move(300, 50)
+        self.tab.resize(400, 300)
+        self.tab.move(100, 50)
         self._TG_set()
 
         self.log = QtWidgets.QPlainTextEdit(MainWindow) # 秀出儀器記錄
-        self.log.move(50, 300)
-        self.log.resize(400, 200)
+        self.log.move(100, 350)
+        self.log.resize(600, 200)
 
         '''輸出訊息'''
         self.cooler.msg.connect(self.show_msg)
 
-        self.test = QtWidgets.QGroupBox()
-        self.test.setTitle("aaaa")
-        self.tab.addTab(self.test, "Test1")
+##        self.test = QtWidgets.QGroupBox()
+##        self.test.setTitle("aaaa")
+        self.tab.addTab(self.Temp_Group, "Temp")
         self.test2 = QtWidgets.QGroupBox()
         self.test2.setTitle("bbbb")
-        self.tab.addTab(self.test2, "Test2")
-        
-        
+        self.tab.addTab(self.test2, "Spec")
 
     def _TG_set(self):
         '''Temp Group'''
-        self.Temp_Group = QtWidgets.QGroupBox(MainWindow)
-        self.Temp_Group.move(50, 50)
-        self.Temp_Group.setTitle("Tempeerature Setting")
+        self.Temp_Group = QtWidgets.QGroupBox()
+##        self.Temp_Group.move(50, 50)
+        self.Temp_Group.setTitle("Temperature Setting")
         self.settemp_lab = QtWidgets.QLabel(self.Temp_Group) # set temp標語
         self.settemp_lab.setText("Set Temperature (C)")
         self.settemp_lab.adjustSize()
@@ -120,6 +118,9 @@ class Ui_MainWindow(object):
         self.settempbutton.setText("Set")
         self.settempbutton.clicked.connect(self._cooler_start)
         self.Temp_Group.adjustSize() # GroupBox自動調整大小
+
+    def _Spec_set(self):
+        
 
     def _showtemp(self):
         self.showtemp.setText(str(self.inputtemp.value()))
