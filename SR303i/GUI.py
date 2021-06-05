@@ -35,7 +35,7 @@ class Acq_Set(QtCore.QThread):
     finish = QtCore.pyqtSignal() # 判斷這個thread結束沒
     msg = QtCore.pyqtSignal(str) # 傳訊息
 
-    def __init__(self, dev, acq_mode, read_mode, exp = 1, acq_cyc = 1, acc = 1, kin_cyc = 1, kin = 1):
+    def __init__(self, dev, acq_mode = 1, read_mode = 1, exp = 1, acq_cyc = 1, acc = 1, kin_cyc = 1, kin = 1):
         super(Acq_Set, self).__init__()
         self.dev = dev
         self.acq_mode = acq_mode
@@ -144,6 +144,10 @@ class Ui_MainWindow(object):
         self.Temp_Group.adjustSize() # GroupBox自動調整大小
 
     def _SG_set(self):
+
+        def acq_change_set(self):
+            Kin.setText("hey")
+        
         self.Spec_Group = QtWidgets.QGroupBox()
 ##        self.test2.setTitle("bbbb")
         AM = QtWidgets.QComboBox(self.Spec_Group)
@@ -218,6 +222,7 @@ class Ui_MainWindow(object):
         OK_button.move(30, 300)
         OK_button.resize(50, 20)
         OK_button.setText("Set")
+        OK_button.clicked.connect(acq_change_set)
 
     def _showtemp(self):
         self.showtemp.setText(str(self.inputtemp.value()))
@@ -230,6 +235,7 @@ class Ui_MainWindow(object):
 ##        print("msg = %s" %(msg))
         self.log.insertPlainText(msg)
 
+    
         
         
 if __name__ == "__main__":
