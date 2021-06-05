@@ -52,6 +52,22 @@ class Acq_Set(QtCore.QThread):
         self.msg.emit("Setting Complete!")
         self.finish.emit()
 
+class Grating_Set(QtCore.QThread):
+    
+    finish = QtCore.pyqtSignal() # 判斷這個thread結束沒
+    msg = QtCore.pyqtSignal(str) # 傳訊息
+
+    def __init__(self, dev):
+        super(Acq_Set, self).__init__()
+        self.dev = dev
+        #grating 設定
+
+    def run(self):
+        self.dev.Acq_Mode(self.acq_mode, self.exp, self.acc_cyc, self.acc, self.kin_cyc, self.kin)
+        self.dev.Read_Mode(self.read_mode, 128, 20, 5)
+        self.msg.emit("Setting Complete!")
+        self.finish.emit()
+
 
 class TakeSignal(QtCore.QThread):
 
@@ -83,6 +99,23 @@ class TakeBG(QtCore.QThread):
         '''
         self.finish.emit() # 最後發送finish的訊號
 
+class Stage_Moving(QtCore.QThread):
+
+    finish = QtCore.pyqtSignal() # 判斷這個thread結束沒
+    msg = QtCore.pyqtSignal(str) # 傳訊息
+
+    def __init__(self, dev_x, dev_y, dev_z, x = 0, y = 0, z = 0):
+
+        super(Stage_Moving, self).__init__()
+        self.dev_x = dev_x
+        self.dev_y = dev_y
+        self.dev_z = dev_z
+        self.r = [x, y, z]
+
+    def run(self):
+        self.finish.emit() # 最後發送finish的訊號
+    
+
 class Ui_MainWindow(object):
 
     def setupUi(self, MainWindow):
@@ -109,10 +142,14 @@ class Ui_MainWindow(object):
         '''分頁設置'''
         self._TG_set()
         self._SG_set()
+        self._HG_set()
+        self._SG_s
         
         '''Tab Control'''
         self.tab.addTab(self.Temp_Group, "Temp Control")
         self.tab.addTab(self.Spec_Group, "Acquisition Setting")
+        self.tab.addTab(self.HW_Group, "Hardware Setting")
+        self.tab.addTab(self.Stage_Group, "Stage Setting")
 
     def _TG_set(self):
         '''Temp Group'''
@@ -145,8 +182,26 @@ class Ui_MainWindow(object):
 
     def _SG_set(self):
 
+        def acq_mode_select(self):
+            if AM.currentText() == "Single":
+                Acc.setEnabled(False)
+                Acc_Cyc.setEnabled(False)
+                Kin.setEnabled(False)
+                Kin_Cyc.setEnabled(False)
+            elif AM.currentText() == "Accumulate":
+                Acc.setEnabled(True)
+                Acc_Cyc.setEnabled(True)
+                Kin.setEnabled(False)
+                Kin_Cyc.setEnabled(False)
+            elif AM.currentText() == "Kinetic":
+                Acc.setEnabled(True)
+                Acc_Cyc.setEnabled(True)
+                Kin.setEnabled(True)
+                Kin_Cyc.setEnabled(True)
+
         def acq_change_set(self):
-            Kin.setText("hey")
+            #self.acq.start()
+            pass
         
         self.Spec_Group = QtWidgets.QGroupBox()
 ##        self.test2.setTitle("bbbb")
@@ -172,6 +227,7 @@ class Ui_MainWindow(object):
         setacqbutton.move(300, 30)
         setacqbutton.resize(50, 20)
         setacqbutton.setText("Select")
+        setacqbutton.clicked.connect(acq_mode_select)
 
         Exp = QtWidgets.QLineEdit(self.Spec_Group)
         Exp.move(30, 130)
@@ -186,6 +242,7 @@ class Ui_MainWindow(object):
         Acc_Cyc.move(30, 190)
         Acc_Cyc.setText("1")
         Acc_Cyc.resize(100, 20)
+        Acc_Cyc.setEnabled(False)
 
         Acc_CycLab = QtWidgets.QLabel(self.Spec_Group)
         Acc_CycLab.setText("Accumulatation Cycle")
@@ -195,6 +252,7 @@ class Ui_MainWindow(object):
         Acc.move(30, 250)
         Acc.setText("1")
         Acc.resize(100, 20)
+        Acc.setEnabled(False)
 
         AccLab = QtWidgets.QLabel(self.Spec_Group)
         AccLab.setText("Accumulatation Time (s)")
@@ -208,11 +266,13 @@ class Ui_MainWindow(object):
         Kin_CycLab = QtWidgets.QLabel(self.Spec_Group)
         Kin_CycLab.setText("Kinetic Cycle")
         Kin_CycLab.move(150, 170)
+        Kin_Cyc.setEnabled(False)
 
         Kin = QtWidgets.QLineEdit(self.Spec_Group)
         Kin.move(150, 250)
         Kin.setText("1")
         Kin.resize(100, 20)
+        Kin.setEnabled(False)
 
         KinLab = QtWidgets.QLabel(self.Spec_Group)
         KinLab.setText("Kinetic Time (s)")
@@ -221,8 +281,49 @@ class Ui_MainWindow(object):
         OK_button = QtWidgets.QPushButton(self.Spec_Group)
         OK_button.move(30, 300)
         OK_button.resize(50, 20)
-        OK_button.setText("Set")
+        OK_button.setText("Set")   
         OK_button.clicked.connect(acq_change_set)
+
+    def _HG_set(self):
+
+        def HW_set(self):
+            pass
+        
+        self.HW_Group = QtWidgets.QGroupBox()
+
+        Grating = QtWidgets.QComboBox(self.HW_Group)
+        Grating_list = ["100/500", "300/500", "1200/500"]
+        Grating.addItems(Grating_list)
+        Grating.move(30, 30)
+
+        GratingLab = QtWidgets.QLabel(self.HW_Group)
+        GratingLab.move(30, 10)
+        GratingLab.resize(50, 20)
+        GratingLab.setText("Grating")
+
+        SC = QtWidgets.QLineEdit(self.HW_Group)
+        SC.move(130, 30)
+        SC.resize(100, 20)
+        SC.setText("1000")
+
+        SCLab = QtWidgets.QLabel(self.HW_Group)
+        SCLab.move(130, 10)
+        SCLab.setText("Spectrum Center")
+
+        Unit = QtWidgets.QComboBox(self.HW_Group)
+        unit = ["nm", "cm-1"]
+        Unit.addItems(unit)
+        Unit.move(250, 30)
+
+        UnitLab = QtWidgets.QLabel(self.HW_Group)
+        UnitLab.move(250, 10)
+        UnitLab.setText("Unit")
+
+        OK_button = QtWidgets.QPushButton(self.HW_Group)
+        OK_button.move(30, 300)
+        OK_button.resize(50, 20)
+        OK_button.setText("Set")   
+        OK_button.clicked.connect(HW_set)
 
     def _showtemp(self):
         self.showtemp.setText(str(self.inputtemp.value()))
@@ -235,9 +336,6 @@ class Ui_MainWindow(object):
 ##        print("msg = %s" %(msg))
         self.log.insertPlainText(msg)
 
-    
-        
-        
 if __name__ == "__main__":
     
     app = QtWidgets.QApplication(sys.argv)
