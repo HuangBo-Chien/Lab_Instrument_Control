@@ -12,7 +12,7 @@ class Andor_Spectrometer:
         
         self._DRV_SUCC()
         self.DEV_Info()
-        self.read_set()
+        self.read_setting()
 
     def _DRV_SUCC(self):
     
@@ -53,7 +53,7 @@ class Andor_Spectrometer:
 ##            print("GetSerialNumber Error!")
             return False
 
-    def read_set(self):
+    def read_setting(self):
     
         self.GP = c_int(100) # Grating Present
         self.Turret = c_int(5)
@@ -242,6 +242,23 @@ class Andor_Spectrometer:
         y_pix = c_int()
         self.atmcd64d.GetDetector(byref(x_pix), byref(y_pix))
         return x_pix.value, y_pix.value
+
+    def change_setting(self, code = 0, Turrent = -1, Grating = -1, Det_off = 0, Gra_off = 0):
+        c_dev_num = c_int(0)
+        c_T = c_int(Turrent)
+        c_G = c_int(Grating)
+        c_DO = c_int(Det_off)
+        c_GO = c_int(Gra_off)
+        if code & 1 != 0:
+            self.ShamrockCIF.ShamrockSetTurret(c_dev_num, c_T)
+        elif code & 2 != 0
+            self.ShamrockCIF.ShamrockSetGrating(c_dev_num, c_G)
+        elif code & 4 != 0:
+            self.ShamrockCIF.ShamrockWavelengthReset(c_dev_num)
+        elif code & 8 != 0:
+            self.ShamrockCIF.ShamrockSetDetectorOffset(c_dev_num, c_DO)
+        elif code & 16 != 0:
+            self.ShamrockCIF.ShamrockSetGratingOffset(c_dev_num, c_GO)
         
 if __name__ == "__main__":
     import time
