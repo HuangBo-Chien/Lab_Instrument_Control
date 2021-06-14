@@ -27,7 +27,7 @@ class Cooler(QtCore.QThread):
             status, temp = self.dev.readT()
             self.msg.emit("Current Temp is " + str(temp) + "\n")
             time.sleep(1)
-        self.msg.emit("Temperature is stable.")
+        self.msg.emit("Temperature is stable.\n")
         self.finish.emit() # 最後發送finish的訊號
 
 class Acq_Set(QtCore.QThread):
@@ -49,7 +49,7 @@ class Acq_Set(QtCore.QThread):
     def run(self):
         self.dev.Acq_Mode(self.acq_mode, self.exp, self.acc_cyc, self.acc, self.kin_cyc, self.kin)
         self.dev.Read_Mode(self.read_mode, 128, 20, 5)
-        self.msg.emit("Setting Complete!")
+        self.msg.emit("Setting Complete!\n")
         self.finish.emit()
 
 class Grating_Set(QtCore.QThread):
@@ -57,17 +57,29 @@ class Grating_Set(QtCore.QThread):
     finish = QtCore.pyqtSignal() # 判斷這個thread結束沒
     msg = QtCore.pyqtSignal(str) # 傳訊息
 
-    def __init__(self, dev):
-        super(Acq_Set, self).__init__()
+    def __init__(self, dev, num = 1):
+        super(Grating_Set, self).__init__()
         self.dev = dev
-        #grating 設定
+        self.num = num # number of grating
 
     def run(self):
-        self.dev.Acq_Mode(self.acq_mode, self.exp, self.acc_cyc, self.acc, self.kin_cyc, self.kin)
-        self.dev.Read_Mode(self.read_mode, 128, 20, 5)
-        self.msg.emit("Setting Complete!")
+        #grating 設定
+        self.msg.emit("Setting Complete!\n")
         self.finish.emit()
 
+class Spectrum_Center_Set(QtCore.QThread):
+
+    finish = QtCore.pyqtSignal() # 判斷這個thread結束沒
+    msg = QtCore.pyqtSignal(str) # 傳訊息
+
+    def __init__(self, dev, w_cen = 560):
+        super(Spectrum_Center_Set, self).__init__()
+        self.dev = dev
+        self.w_cen = w_cen
+
+    def run(self):
+        self.msg.emit("Setting Complete!\n")
+        self.finish.emit()
 
 class TakeSignal(QtCore.QThread):
 
@@ -134,16 +146,20 @@ class Ui_MainWindow(object):
         '''其他thread'''
         self.cooler = Cooler(self.SR303i)
         self.acq = Acq_Set(self.SR303i)
+        self.gs = Grating_Set(self.SR303i)
+        self.sps = Spectrum_Center_Set(self.SR303i)
 
         '''輸出訊息'''
         self.cooler.msg.connect(self.show_msg)
         self.acq.msg.connect(self.show_msg)
+        self.gs.msg.connect(self.show_msg)
+        self.sps.msg.connect(self.show_msg)
         
         '''分頁設置'''
         self._TG_set()
         self._SG_set()
         self._HG_set()
-        self._SG_s
+        self._SGG_set()
         
         '''Tab Control'''
         self.tab.addTab(self.Temp_Group, "Temp Control")
@@ -181,7 +197,7 @@ class Ui_MainWindow(object):
         self.Temp_Group.adjustSize() # GroupBox自動調整大小
 
     def _SG_set(self):
-
+        '''accumulation setting'''
         def acq_mode_select(self):
             if AM.currentText() == "Single":
                 Acc.setEnabled(False)
@@ -198,10 +214,6 @@ class Ui_MainWindow(object):
                 Acc_Cyc.setEnabled(True)
                 Kin.setEnabled(True)
                 Kin_Cyc.setEnabled(True)
-
-        def acq_change_set(self):
-            #self.acq.start()
-            pass
         
         self.Spec_Group = QtWidgets.QGroupBox()
 ##        self.test2.setTitle("bbbb")
@@ -282,13 +294,10 @@ class Ui_MainWindow(object):
         OK_button.move(30, 300)
         OK_button.resize(50, 20)
         OK_button.setText("Set")   
-        OK_button.clicked.connect(acq_change_set)
+        OK_button.clicked.connect(lambda: self.acq_change_set())
 
     def _HG_set(self):
 
-        def HW_set(self):
-            pass
-        
         self.HW_Group = QtWidgets.QGroupBox()
 
         Grating = QtWidgets.QComboBox(self.HW_Group)
@@ -323,7 +332,10 @@ class Ui_MainWindow(object):
         OK_button.move(30, 300)
         OK_button.resize(50, 20)
         OK_button.setText("Set")   
-        OK_button.clicked.connect(HW_set)
+        OK_button.clicked.connect(lambda: self.HW_set(Unit.currentText(), SC.text())) #[1, 2]
+
+    def _SGG_set(self):
+        self.Stage_Group = QtWidgets.QGroupBox()
 
     def _showtemp(self):
         self.showtemp.setText(str(self.inputtemp.value()))
@@ -331,6 +343,22 @@ class Ui_MainWindow(object):
     def _cooler_start(self):        
         self.cooler.temp = self.inputtemp.value()
         self.cooler.start()
+
+    def acq_change_set(self):
+        #self.acq.start()
+        pass
+
+    def HW_set(self, unit, val):
+        if unit == "cm-1":
+            shift = float(val)
+            w0 = 532 # nm
+            self.sps.w_cen = round(1 / (1 / w0 - shift * 1e-7), 2)
+        else:
+            self.sps.w_cen = round(float(val))
+##        print(self.sps.w_cen)
+        self.gs.start()
+        self.gs.wait()
+        self.sps.start()
 
     def show_msg(self, msg):
 ##        print("msg = %s" %(msg))
@@ -344,3 +372,8 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
+
+'''
+[1]: https://stackoverflow.com/questions/940555/pyqt-sending-parameter-to-slot-when-connecting-to-a-signal
+[2]: https://eli.thegreenplace.net/2011/04/25/passing-extra-arguments-to-pyqt-slot
+'''
