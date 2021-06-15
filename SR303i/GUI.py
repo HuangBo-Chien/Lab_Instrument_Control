@@ -47,9 +47,13 @@ class Acq_Set(QtCore.QThread):
         self.kin = kin
 
     def run(self):
-        self.dev.Acq_Mode(self.acq_mode, self.exp, self.acc_cyc, self.acc, self.kin_cyc, self.kin)
-        self.dev.Read_Mode(self.read_mode, 128, 20, 5)
-        self.msg.emit("Setting Complete!\n")
+        print("Start Running")
+        self.dev.Acq_Mode(Mode = self.acq_mode, Exp_Time = self.exp, ACyc_Num = self.acq_cyc, ACyc_Time = self.acc, KCyc_Num = self.kin_cyc, KCyc_Time = self.kin)
+        self.msg.emit("Acquisition Mode Setting Complete!\n")
+        print("Acquisition Mode Setting Complete!")
+        self.dev.Read_Mode(Mode = self.read_mode, Cen_Row = 215, Height = 50, offset = 0)
+        self.msg.emit("Read Mode Setting Complete!\n")
+        print("Read Mode Setting Complete!")
         self.finish.emit()
 
 class Grating_Set(QtCore.QThread):
@@ -57,13 +61,14 @@ class Grating_Set(QtCore.QThread):
     finish = QtCore.pyqtSignal() # 判斷這個thread結束沒
     msg = QtCore.pyqtSignal(str) # 傳訊息
 
-    def __init__(self, dev, num = 1):
+    def __init__(self, dev, grating = 1):
         super(Grating_Set, self).__init__()
         self.dev = dev
-        self.num = num # number of grating
+        self.grating = grating # number of grating
 
     def run(self):
         #grating 設定
+        self.dev.change_setting(code = 2, Turrent = 1, Grating = self.grating)
         self.msg.emit("Setting Complete!\n")
         self.finish.emit()
 
@@ -193,7 +198,7 @@ class Ui_MainWindow(object):
         settempbutton.move(150, 90)
         settempbutton.resize(50, 20)
         settempbutton.setText("Set")
-        settempbutton.clicked.connect(self._cooler_start)
+        settempbutton.clicked.connect(lambda: self._cooler_start(inputtemp.value()))
         self.Temp_Group.adjustSize() # GroupBox自動調整大小
 
     def _SG_set(self):
@@ -262,7 +267,7 @@ class Ui_MainWindow(object):
 
         Acc = QtWidgets.QLineEdit(self.Spec_Group)
         Acc.move(30, 250)
-        Acc.setText("1")
+        Acc.setText("1.01")
         Acc.resize(100, 20)
         Acc.setEnabled(False)
 
@@ -282,7 +287,7 @@ class Ui_MainWindow(object):
 
         Kin = QtWidgets.QLineEdit(self.Spec_Group)
         Kin.move(150, 250)
-        Kin.setText("1")
+        Kin.setText("1.01")
         Kin.resize(100, 20)
         Kin.setEnabled(False)
 
@@ -294,7 +299,7 @@ class Ui_MainWindow(object):
         OK_button.move(30, 300)
         OK_button.resize(50, 20)
         OK_button.setText("Set")   
-        OK_button.clicked.connect(lambda: self.acq_change_set())
+        OK_button.clicked.connect(lambda: self.acq_change_set(AM.currentText(), Exp.text(), Acc_Cyc.text(), Acc.text(), Kin_Cyc.text(), Kin.text(), RM.currentText()))
 
     def _HG_set(self):
 
@@ -340,13 +345,31 @@ class Ui_MainWindow(object):
     def _showtemp(self):
         self.showtemp.setText(str(self.inputtemp.value()))
 
-    def _cooler_start(self):        
-        self.cooler.temp = self.inputtemp.value()
+    def _cooler_start(self, temp):        
+        self.cooler.temp = int(temp) #self.inputtemp.value()
         self.cooler.start()
 
-    def acq_change_set(self):
-        #self.acq.start()
-        pass
+    def acq_change_set(self, AcqMode = "Single", Exp_Time = "1", ACyc_Num = "1", ACyc_Time = "1.01", KCyc_Num = "1", KCyc_Time = "1", ReadMode = "FVB"):
+        if AcqMode == "Single":
+            self.acq.acq_mode = 1
+        elif AcqMode == "Accumulate":
+            self.acq.acq_mode = 2
+        elif AcqMode == "Kinetic":
+            self.acq.acq_mode = 3
+        print("Acq Mode = %d" %(self.acq.acq_mode))
+        if ReadMode == "FVB":
+            self.acq.read_mode = 0
+        elif ReadMode == "MT Track":
+            self.acq.read_mode = 1
+        elif ReadMode == "Image":
+            self.acq.read_mode = 4
+        print("Read mode = %d" %(self.acq.read_mode))
+        self.acq.exp = float(Exp_Time)
+        self.acq.acq_cyc = int(ACyc_Num)
+        self.acq.acc = float(ACyc_Time)
+        self.acq.kin_cyc = int(KCyc_Num)
+        self.acq.kin = float(KCyc_Time)
+        self.acq.start()
 
     def HW_set(self, unit, val):
         if unit == "cm-1":
