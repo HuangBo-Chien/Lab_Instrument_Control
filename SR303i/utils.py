@@ -251,13 +251,13 @@ class Andor_Spectrometer:
         c_GO = c_int(Gra_off)
         if code & 1 != 0:
             self.ShamrockCIF.ShamrockSetTurret(c_dev_num, c_T)
-        elif code & 2 != 0
+        if code & 2 != 0:
             self.ShamrockCIF.ShamrockSetGrating(c_dev_num, c_G)
-        elif code & 4 != 0:
+        if code & 4 != 0:
             self.ShamrockCIF.ShamrockWavelengthReset(c_dev_num)
-        elif code & 8 != 0:
+        if code & 8 != 0:
             self.ShamrockCIF.ShamrockSetDetectorOffset(c_dev_num, c_DO)
-        elif code & 16 != 0:
+        if code & 16 != 0:
             self.ShamrockCIF.ShamrockSetGratingOffset(c_dev_num, c_GO)
         
 if __name__ == "__main__":
@@ -275,7 +275,7 @@ if __name__ == "__main__":
                 break
             time.sleep(1)
         SR303i.camera_ini()
-        SR303i.Acq_Mode(Mode = 1, Exp_Time = 1)
+        SR303i.Acq_Mode(Mode = 3, Exp_Time = 10)
         SR303i.Read_Mode(Mode = 1, Cen_Row = 215, Height = 50, offset = 0)
         SR303i.Gate_Mode(Mode = 1)
         SR303i.Tri_Mode(Mode = 0)
