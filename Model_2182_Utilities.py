@@ -1,3 +1,6 @@
+'''
+Before using program to control model 2182, please make sure it has been correctly connected to the computer via GPIB by clicking "scan for instrument" button on NIMAX
+'''
 import pyvisa as pv
 import time
 
@@ -9,10 +12,13 @@ class Model_2182:
         self.Addr = GPIB_Addr
         self.Identity = rm.open_resource(GPIB_Addr)
     
-    def Start(self) -> None:
+    def Reset(self) -> None:
         self.Identity.write("*RST")
     
     def Select_Volt_Range(self, Range:float = 10) -> None:
+        '''
+        On the front panel, 100V, 10V, 1V, 0.1V, 0.01V can be chosen
+        '''
         if Range < 0:
             Range = 0
         elif Range > 120:
@@ -38,6 +44,7 @@ class Model_2182:
     def Select_PLC(self, PLC:float = 1) -> None:
         '''
         In Taiwan, our electricity is 60 Hz
+        PLC 1~2 is recommended
         '''
         if PLC < 0.01:
             PLC = 0.01
