@@ -1,6 +1,7 @@
-# Lab_Dev_Control
+# Lab_Instrument_Control
 
-Programs to control devices in my lab.
+Programs to control instrument in my lab.
+Most of the program rely on GPIB connection with the instrument. Therefore, pyVisa is required package.
 
 1. Keithley
 
