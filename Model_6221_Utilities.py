@@ -42,6 +42,8 @@ class Model_6221:
             if 5 <= Interval <= 999999:
                 self.Identity.write(f":SOUR:PDEL:INT {Interval}")
             self.Identity.write(f":SOUR:PDEL:SWE {Sweep}")
+            if Sweep:
+                self.Identity(f"SOUR:SWE:")
             if Low_Meas in (1, 2):
                 self.Identity.write(f":SOUR:PDEL:LME {Low_Meas}")
         else:
