@@ -22,7 +22,7 @@ class Model_6221:
         else:
             return False
 
-    def PulseDelta_Setting_and_Arm(self, I_high:float, I_low:float, Width:float, Src_delay:float, CountNum:str = "INF", SrcRng:str = "Best", Interval:int = 5, Sweep:bool = False, Low_Meas:int = 2) -> None:
+    def PulseDelta_Setting(self, I_high:float, I_low:float, Width:float, Src_delay:float, CountNum:str = "INF", SrcRng:str = "Best", Interval:int = 5, Sweep:bool = False, Low_Meas:int = 2) -> None:
         '''
         Pulse Delta Mode
         '''
@@ -37,6 +37,7 @@ class Model_6221:
                 self.Identity.write(f":SOUR:PDEL:SDEL {Src_delay}")
             if (CountNum.isnumeric() and 1 <= int(CountNum) <= 65636) or CountNum == "INF":
                 self.Identity.write(f":SOUR:PDEL:COUN {CountNum}")
+                self.Identity.write(f":TRAC:POIN {CountNum}") # the number of traced points == the number of count
             if SrcRng in ("BEST", "FIX"):
                 self.Identity.write(f":SOUR:PDEL:RANG {SrcRng}")
             if 5 <= Interval <= 999999:
@@ -47,6 +48,24 @@ class Model_6221:
         else:
             pass
             # raise DevConnectionError(Devname = "Model 2182")
+    
+    def Communication_with_2182(self, RNG:float = 1, NPLC:int = 2):
+        pass
+    
+    def PulseDelta_Measure(self) -> list:
+        self.Identity.write(":SOUR:PDEL:ARM")
+        self.Identity.write(":INIT:IMM") # start the measurement
+        count_num = 0
+        while True:
+            event_response = self.Identity.query(":STAT:OPER:EVEN?")
+            if (event_response & 1024) >> 10 and not (event_response & 64) >> 6:
+                break
+            if (event_response & 32) >> 5:
+                count_num += 1
+                print(count_num)
+        self.Identity.write(":SOUR:SWE:ABOR")
+        return self.Identity.query(":TRAC:DATA?")
+
 
 if __name__ == "__main__":
     my_Model_6221 = Model_6221
