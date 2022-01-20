@@ -32,6 +32,9 @@ class Model_2182:
             self.Identity.write(":DISP:ENAB OFF")
     
     def Sense_Volt(self, Avg_times:int =  1) -> float:
+        '''
+        Retrieve data multiple times and take the average
+        '''
         if Avg_times < 1:
             Avg_times = 1
         val = 0
@@ -44,7 +47,7 @@ class Model_2182:
     def Select_PLC(self, PLC:float = 1) -> None:
         '''
         In Taiwan, our electricity is 60 Hz
-        PLC 1~2 is recommended
+        PLC 1~2 is recommended according to the manual
         '''
         if PLC < 0.01:
             PLC = 0.01
