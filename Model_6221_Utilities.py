@@ -1,3 +1,4 @@
+from array import array
 from turtle import width
 import pyvisa as pv
 import time
@@ -38,12 +39,13 @@ class Model_6221:
         if 1 <= Comp <= 105:
             self.Identity.write(f"SOUR:CURR:COMP {Comp}")
 
-    def PulseDelta_Mode(self) -> np.array:
+    def PulseDelta_Mode(self) -> None:
         PD = self.Pulsedelta
         commands = PD.Generate_Command()
         for command in commands:
             self.Identity.write(command)
-        
+    
+    def PulseDelta_Trigger(self) -> np.array:
         self.Identity.write(":SOUR:PDEL:ARM")
         self.Identity.write(":INIT:IMM") # start the measurement
         count_num = 0
@@ -213,7 +215,7 @@ class Model_6221:
             pass
 
 if __name__ == "__main__":
-    my_Model_6221 = Model_6221
+    my_Model_6221 = Model_6221("GPIB0::16::INSTR")
     # check model 2182 connection
     # set model 2182 volt range and number of plc
     # set model 6221 to pulse delta mode
