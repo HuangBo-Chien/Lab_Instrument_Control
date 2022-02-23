@@ -18,6 +18,8 @@ class Model_6221:
 
     def Check_2812_Connection(self, Mode:str) -> bool:
         '''
+        This method is to check whether model 2182 is correctly connected to model 6221.
+
         Mode can only be DEL, PDEL, DCON
         '''
         Modes = ("DEL", "PDEL", "DCON")
@@ -29,26 +31,39 @@ class Model_6221:
     
     def Send_Command_to_2182(self, Commands:list) -> None:
         '''
-        send commands from 6221 to 2182
+        This method can send GPIB commands to model 2182 via model 6221.
         '''
         prefix = "SYST:COMM:SER "
         for command in Commands:
             self.Identity.write(f"{prefix}\"{command}\"")
     
     def Set_Compliance(self, Comp:int = 105) -> None:
+        '''
+        This method sets model 6221's output voltage compliance.
+        The max compliance is 105 V
+        The default compliance is 10 V
+        '''
         if 1 <= Comp <= 105:
             self.Identity.write(f"SOUR:CURR:COMP {Comp}")
 
     def PulseDelta_Mode(self) -> None:
+        '''
+        This method is responsible for generating GPIB commands and sending them to model 6221
+        '''
         PD = self.Pulsedelta
-        commands = PD.Generate_Command()
+        commands = PD.Generate_Command() # generate commands for pulse delta mode
+        # send commands to model 6221
         for command in commands:
             self.Identity.write(command)
     
     def PulseDelta_Trigger(self) -> np.array:
+        '''
+        This method sends GPIB commands to trigger pulse delta mode measurement, and then return results.
+        '''
         self.Identity.write(":SOUR:PDEL:ARM")
         self.Identity.write(":INIT:IMM") # start the measurement
         count_num = 0
+        # keep asking whether the measurement has finished.
         while True:
             event_response = self.Identity.query(":STAT:OPER:EVEN?")
             if (event_response & 1024) >> 10 and not (event_response & 64) >> 6:
@@ -56,12 +71,12 @@ class Model_6221:
             if (event_response & 32) >> 5:
                 count_num += 1
                 print(count_num)
-        self.Identity.write(":SOUR:SWE:ABOR")
+        self.Identity.write(":SOUR:SWE:ABOR") # exit pulse delta mode
         return np.reshape(np.array(map(np.float64, self.Identity.query(":TRAC:DATA?").split(","))), (-1, 2))
 
     class Pulsedelta:
         """
-        Pulse Delta Mode
+        This method helps users to set up pulse delta mode parameters.
         Unit of params related to current are uA.
         Unit of delay time and pulse width are us.
         Unit of interval is power line cycle (PLC). e.g. 60Hz ---> 1 PLC = 1 / 60 s ~ 16.667 ms
@@ -217,7 +232,11 @@ class Model_6221:
 if __name__ == "__main__":
     my_Model_6221 = Model_6221("GPIB0::16::INSTR")
     # check model 2182 connection
+    my_Model_6221.Check_2812_Connection()
     # set model 2182 volt range and number of plc
     # set model 6221 to pulse delta mode
+    PD = my_Model_6221.Pulsedelta
+    PD.Set_I_High()
     # arm the mode
+    
     # start the measurement
