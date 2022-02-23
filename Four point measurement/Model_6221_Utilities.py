@@ -1,4 +1,3 @@
-from importlib.resources import Resource
 import pyvisa as pv
 
 rm = pv.ResourceManager()
