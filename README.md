@@ -25,3 +25,8 @@ Most of the program rely on GPIB connection with the instrument. Therefore, pyVi
 5. Thorlabs
 
     * Motor...
+
+6. LakeShore
+
+    * Model 475
+    * Model 450
