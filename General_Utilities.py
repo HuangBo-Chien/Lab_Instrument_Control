@@ -4,7 +4,7 @@ This python program stores self-defined functions for general purposes.
 
 from numpy import arange
 
-def series_generation(From = 0, To = 0, Num_of_pt = 1, rev_concat = False) -> list:
+def series_generation(From = 0, To = 0, Num_of_pt = 2, rev_concat = False) -> list:
     '''
     rev_concat means whether the user want to concatanate the reversed list after the original list.
     e.g.1
