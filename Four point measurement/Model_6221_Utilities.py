@@ -1,4 +1,5 @@
 import pyvisa as pv
+import numpy as np
 
 rm = pv.ResourceManager()
 
@@ -37,6 +38,24 @@ class Model_6221:
         '''
         for command in Commands:
             self.Instr.write(command)
+    
+    def PulseDelta_Trigger(self) -> np.array:
+        '''
+        This method sends GPIB commands to trigger pulse delta mode measurement, and then return results.
+        '''
+        self.Instr.write(":SOUR:PDEL:ARM")
+        self.Instr.write(":INIT:IMM") # start the measurement
+        count_num = 0
+        # keep asking whether the measurement has finished.
+        while True:
+            event_response = self.Instr.query(":STAT:OPER:EVEN?")
+            if (event_response & 1024) >> 10 and not (event_response & 64) >> 6:
+                break
+            if (event_response & 32) >> 5:
+                count_num += 1
+                print(count_num)
+        self.Instr.write(":SOUR:SWE:ABOR") # exit pulse delta mode
+        return np.reshape(np.array(map(np.float64, self.Instr.query(":TRAC:DATA?").split(","))), (-1, 2))
 
 class PulseDelta_Setting():
     
@@ -77,6 +96,22 @@ class PulseDelta_Setting():
             for key, val in self.CURR.items():
                 Commands.append(f"{prefix}{key} {val}")
         return Commands
+    
+    def Show_Setting(self) -> None:
+        '''
+        Print out Pulse Delta Mode setting on the screen.
+        '''
+        print("Pulse Delta Mode Settings")
+        for key, val in self.PD.items():
+            print(f"key = {key}, and val = {val}")
+        if self.PD["SWE"]:
+            print("Sweep Settings")
+            for key, val in self.SWE.items():
+                print(f"key = {key}, and val = {val}")
+            print("Sweep Current Settings")
+            for key, val in self.CURR.items():
+                print(f"key = {key}, and val = {val}")
+
 
 class Sweep_Setting():
     pass
@@ -91,3 +126,5 @@ if __name__ == "__main__":
     '''
     GPIB_Addr = "GPIB::0:INSTR"
     My_6221 = Model_6221(GPIB_Addr = GPIB_Addr)
+    PD = PulseDelta_Setting
+    
