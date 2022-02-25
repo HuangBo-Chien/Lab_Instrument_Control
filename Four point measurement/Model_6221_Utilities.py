@@ -37,8 +37,44 @@ def Send_Commands_to_6221(Dev, Commands:list) -> None:
 class PulseDelta_Setting():
     
     def __init__(self) -> None:
-        self.setting = {} # create a dict to store setting
+        # pulse delta setting
+        self.PD = {}
+        self.PD["HIGH"] = 100.0
+        self.PD["LOW"] = 0.0
+        self.PD["WIDT"] = 100
+        self.PD["SDEL"] = 100
+        self.PD["COUN"] = 1
+        self.PD["RANG"] = "Best"
+        self.PD["INT"] = 5
+        self.PD["LME"] = 2
+        self.PD["SWE"] = False
+        # sweep setting for the sweep mode
+        self.SWE = {}
+        self.SWE["SPAC"] = 1
+        self.SWE["POIN"] = 1
+        self.SWE["RANG"] = "Best"
+        self.SWE["COUN"] = 1
+        # current setting in tje sweep mode
+        self.CURR = {}
+        self.CURR["STAR"] = 10.0
+        self.CURR["STOP"] = 0.0
+        self.CURR["COMP"] = 105
+    
+    def Commands_Generation(self) -> list:
+        Commands = []
+        prefix = "SOUR:PDEL:"
+        for key, val in self.PD.items():
+            Commands.append(f"{prefix}{key} {val}")
+        if self.PD["SWE"] == True:
+            prefix = "SOUR:SWE:"
+            for key, val in self.SWE.items():
+                Commands.append(f"{prefix}{key} {val}")
+            prefix = "SOUR:CURR:"
+            for key, val in self.CURR.items():
+                Commands.append(f"{prefix}{key} {val}")
+        return Commands
 
 if __name__ == "__main__":
     GPIB_Addr = "GPIB::0:INSTR"
     model_6221 = Device_Connection(GPIB = GPIB_Addr)
+    PD_Setting = PulseDelta_Setting
