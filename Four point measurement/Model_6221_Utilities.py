@@ -127,4 +127,11 @@ if __name__ == "__main__":
     GPIB_Addr = "GPIB::0:INSTR"
     My_6221 = Model_6221(GPIB_Addr = GPIB_Addr)
     PD = PulseDelta_Setting
+    My_6221.Send_Commands_to_6221(PD.Commands_Generation()) # generate commands and send to model 6221
+    res = My_6221.PulseDelta_Trigger()
+
+    import matplotlib.pyplot as plt
+
+    plt.plot(res)
+    plt.show()
     
