@@ -155,9 +155,20 @@ class SR830:
             else:
                 for j in range(n):
                     res[j] = (res[j] + single[j]) / (i + 1)
-            sleep(0.1)
+                sleep(0.1)
 
         return res
 
 if __name__ == "__main__":
     mySR830 = SR830()
+    mySR830.Auto_Sense_Range()
+    mySR830.Set_Reserve_Mode(Mode = 0)
+    mySR830.Auto_Phase()
+
+    import matplotlib.pyplot as plt
+
+    res = []
+    for _ in range(20):
+        res.append(mySR830.Measure(X = True, AVG = 10))
+    plt.plot(res)
+    plt.show()
