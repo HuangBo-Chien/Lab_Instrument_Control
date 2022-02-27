@@ -57,6 +57,9 @@ class Model_6221:
         self.Instr.write(":SOUR:SWE:ABOR") # exit pulse delta mode
         return np.reshape(np.array(map(np.float64, self.Instr.query(":TRAC:DATA?").split(","))), (-1, 2))
 
+    def Wave_Trigger(self) -> np.array:
+        pass
+
 class PulseDelta_Setting():
     
     def __init__(self) -> None:
@@ -83,7 +86,7 @@ class PulseDelta_Setting():
         self.CURR["STOP"] = 0.0
         self.CURR["COMP"] = 105
     
-    def Commands_Generation(self) -> list:
+    def Generate_Commands(self) -> list:
         Commands = []
         prefix = "SOUR:PDEL:"
         for key, val in self.PD.items():
@@ -112,8 +115,20 @@ class PulseDelta_Setting():
             for key, val in self.CURR.items():
                 print(f"key = {key}, and val = {val}")
 
+class DC_Setting():
+
+    def __init__(self) -> None:
+        self.CURR = {}
+    
+    def Generate_Commands(self) -> list:
+        Commands = []
+        prefix = "SOuR:CURR "
+        ### under construction
 
 class Sweep_Setting():
+    pass
+
+class Wave_Setting():
     pass
 
 if __name__ == "__main__":
@@ -127,9 +142,10 @@ if __name__ == "__main__":
     GPIB_Addr = "GPIB::0:INSTR"
     My_6221 = Model_6221(GPIB_Addr = GPIB_Addr)
     PD = PulseDelta_Setting
-    My_6221.Send_Commands_to_6221(PD.Commands_Generation()) # generate commands and send to model 6221
+    My_6221.Send_Commands_to_6221(PD.Generate_Commands()) # generate commands and send to model 6221
     res = My_6221.PulseDelta_Trigger()
 
+    # Test by plotting results
     import matplotlib.pyplot as plt
 
     plt.plot(res)
