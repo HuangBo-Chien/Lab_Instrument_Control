@@ -77,13 +77,22 @@ class Series_83650B:
         '''
         Set Output Power Level (dBm)
         '''
-        self.Instr.write("~")
+        self.Instr.write(f"POW:LEV {Lev} DBM")
     
     def Set_Sweep_Time(self, time:float) -> None:
         '''
         Set sweeping time for sweep functions
         '''
         pass
+
+    def Power_Output(self, Switch:bool) -> None:
+        '''
+        Switch on/off the output
+        '''
+        if Switch:
+            self.Instr.write("POW:STAT ON")
+        else:
+            self.Instr.write("POW:STAT OFF")
 
 class AM_Modulation:
 
