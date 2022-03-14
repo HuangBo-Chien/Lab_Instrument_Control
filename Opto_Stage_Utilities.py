@@ -33,7 +33,8 @@ class Opto_Stage:
         while True:
             time.sleep(0.5)
             status = self.Instr.query("!:")
-            if status == r"R\r\n":
+            # print(status)
+            if status == "R\r\n":
                 break
         print("Stage Idle!")
     
@@ -83,4 +84,5 @@ if __name__ == "__main__":
     mystage = Opto_Stage("GPIB::8::INSTR")
     # mystage.Move_Absolute(Axis = "X", Direction = "+", Position = 1000)
     mystage.Move_Relative(Axis = 'X', Direction = '-', Displacement = 500)
+    mystage.Wait_For_Running()
     
