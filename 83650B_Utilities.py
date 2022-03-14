@@ -44,7 +44,7 @@ class Series_83650B:
             self.Instr.write(f"FREQ:CEN {Center} {self.Allowed_Unit[Unit]}")
             self.Instr.write(f"FREQ:CEN {Span} {self.Allowed_Unit[Unit]}")
     
-    def Set_Sweep_by_Start_Step_Stop(self, Start:float, Step:float, Stop:float, Unit:int) -> None:
+    def Set_Sweep_by_Start_Stop(self, Start:float, Stop:float, Unit:int) -> None:
         '''
         unit = 0 ---> Hz
         unit = 1 ---> kHz
@@ -55,6 +55,12 @@ class Series_83650B:
             self.Instr.write(f"FREQ:CEN {Start} {self.Allowed_Unit[Unit]}")
             self.Instr.write(f"FREQ:CEN {Stop} {self.Allowed_Unit[Unit]}")
     
+    def Set_AM_Mod_Linear_Depth(self, Depth:float) -> None:
+        '''
+        Set Amplitude Modulation Depth.
+        '''
+        pass
+
     def Set_Modulation_Mode(self, Mode:int) -> None:
         if Mode == 0:
             self.Instr.write("MOD:OUTP:AM")
@@ -66,6 +72,27 @@ class Series_83650B:
         Switch On/Off modulation 
         '''
         self.Instr.write(f"MOD:OUTP:STAT {int(Swith)}")
+    
+    def Set_Power_Level(self, Lev:float) -> None:
+        '''
+        Set Output Power Level (dBm)
+        '''
+        self.Instr.write(f"POW:LEV {Lev} DBM")
+    
+    def Set_Sweep_Time(self, time:float) -> None:
+        '''
+        Set sweeping time for sweep functions
+        '''
+        pass
+
+    def Power_Output(self, Switch:bool) -> None:
+        '''
+        Switch on/off the output
+        '''
+        if Switch:
+            self.Instr.write("POW:STAT ON")
+        else:
+            self.Instr.write("POW:STAT OFF")
 
 class AM_Modulation:
 

@@ -47,8 +47,10 @@ class SR830:
 
     def Set_Sync_Filter(self, Switch:bool) -> None:
         '''
-        Turn On/Off sync filter
+        Switch On/Off sync filter
         The filter is only effective when demod freq is less than 200 Hz.
+        Switch == True ---> Switch on the filter
+        Switch == False ---> Switch off the filter
         '''
         self.Instr.write(f"SYNC {int(Switch)}")
     
@@ -128,11 +130,11 @@ class SR830:
         if 1 <= Harm <= 19999:
             self.Instr.write("Harm {Harm}")
     
-    def Measure(self, X:bool = False, Y:bool = False, R:bool = False, Phase:bool = False, AVG:int = 1) -> list:
+    def Measure(self, X:bool = False, Y:bool = False, R:bool = False, Phase:bool = False) -> dict:
         '''
         take data from SR830
-        X, Y, R, Phase four quantities can be measured.
-        results are returned in list form.
+        Users can use True/False to include/exclude X, Y, R, and Phase.  
+        Results are returned as a dict
         '''
         quantities = []
         if X:
@@ -144,19 +146,13 @@ class SR830:
         if Phase:
             quantities.append(4)
         
-        res = []
-        n = len(quantities)
-        for i in range(AVG):
-            single = []
-            for quantity in quantities:
-                single.append(self.Instr.query(f"OUTP {quantity}"))
-            if i == 0:
-                continue
-            else:
-                for j in range(n):
-                    res[j] = (res[j] + single[j]) / (i + 1)
-                sleep(0.1)
+        table = ["X", "Y", "R", "Phase"]
+        res = {}
 
+        for quantity in quantities:
+            res[table[quantity]] = self.Instr.query(f"OUTP {quantity}")
+            sleep(0.1)
+        
         return res
 
 if __name__ == "__main__":
