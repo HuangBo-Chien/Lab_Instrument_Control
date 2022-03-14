@@ -81,5 +81,6 @@ class Opto_Stage:
 
 if __name__ == "__main__":
     mystage = Opto_Stage("GPIB::8::INSTR")
-    mystage.Move_Absolute(Axis = "X", Direction = "+", Position = 1000)
+    # mystage.Move_Absolute(Axis = "X", Direction = "+", Position = 1000)
+    mystage.Move_Relative(Axis = 'X', Direction = '-', Displacement = 500)
     
