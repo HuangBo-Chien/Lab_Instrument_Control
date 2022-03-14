@@ -1,6 +1,6 @@
 import pyvisa as pv
 
-rm = pv.ResourceManager
+rm = pv.ResourceManager()
 
 class SMB100A:
 
@@ -60,7 +60,7 @@ class SMB100A:
         '''
         Set output power (dBm)
         '''
-        self.Instr.write(f"SOURLPOW:LEV:IMM:AMOL {Power}")
+        self.Instr.write(f"SOUR:POW:LEV:IMM:AMPL {Power}")
     
     def Set_Output_State(self, State:bool) -> None:
         '''
@@ -70,7 +70,15 @@ class SMB100A:
         if State:
             self.Instr.write("OUTP:STAT ON")
         else:
-            self.Instr.write("OUTP STAT OFF")
+            self.Instr.write("OUTP:STAT OFF")
 
 if __name__ == "__main__":
-    mySMB100A = SMB100A
+    mySMB100A = SMB100A("GPIB::28::INSTR")
+    mySMB100A.Set_CW_Freq(Freq = 10) # set freq to 10 GHz
+    mySMB100A.Set_Output_Power(Power = 15) # set power to 15 dBm
+    mySMB100A.Set_Output_State(State = True)
+    
+    from time import sleep
+    sleep(10)
+    mySMB100A.Set_Output_State(State = False)
+
