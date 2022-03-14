@@ -1,12 +1,29 @@
 import GHOST_Utilities
 import SMB100A_Utilities
 import Opto_Stage_Utilities
-
+from datetime import datetime
 '''
 This code is for spatial scanning to measure spatial dependence of magnon signal.
 It requires motorized stages (SHOT-302GS), rf generator (SMB100A), and BLS (Ghost)
 To control SHOT-302GS, it should be setted to HOST mode.
 '''
+
+def Read_Files_And_Plot(Folder:str, fnames:list, freq:float) -> None:
+    '''
+    Read files and plot as 3d map
+    '''
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from time import sleep
+
+    for fname in fnames:
+        data = np.loadtxt(fname = Folder + fname + ".raw")
+        plt.plot(data[:, 0], data[:, 1])
+        plt.xlabel("Freq (GHz)")
+        plt.ylabel("Count (a.u.)")
+        plt.title(fname)
+        plt.draw()
+        sleep(5)
 
 if __name__ == "__main__":
     
@@ -29,13 +46,20 @@ if __name__ == "__main__":
     RF.Set_Output_Power(Power = Power)
     RF.Set_Output_State(True)
 
+    # File name list
+    fname_list = []
+
     # Start Measurement
     for i in range(0, Length, Stepx):
         for j in range(0, Width, Stepy):
             print(f"i = {i}, and j = {j}")
+            # Stage Part
             Stages.Move_Relative(Axis = "Y", Direction = "+", Displacement = Stepy)
             Stages.Wait_For_Running()
-            filename = f"Point_{i}_Point_{j}"
+            # File Part
+            filename = f"{datetime.today().date()}_Point_{i}_Point_{j}"
+            fname_list.append(filename)
+            # BLS Part
             BLS.Measurement_Start(Sleep_Time = Time)
             BLS.Data_Saving(filename = filename)
             BLS.Clear_Spectrum()
@@ -51,3 +75,6 @@ if __name__ == "__main__":
     BLS.Close()
     # Close RF
     RF.Set_Output_State(False)
+
+    # Read files and draw a map
+    Read_Files_And_Plot(Folder = "D:\Data", fnames = fname_list, freq = Freq)
