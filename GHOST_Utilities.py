@@ -1,4 +1,4 @@
-import time
+from time import sleep
 from telnetlib import Telnet
 
 class GHOST:
@@ -11,9 +11,9 @@ class GHOST:
         '''
         Turn input command into byte string, and to the host server
         '''
-        time.sleep(1)
+        sleep(1)
         self.tn.write(command.encode('ascii') + b"\r\n")
-        time.sleep(0.5)
+        sleep(0.5)
         msg = self.tn.read_very_eager().decode()
         print("Msg = ", msg)
         return msg
@@ -44,11 +44,11 @@ class GHOST:
         self.Input_command(f"START {Cycle}")
         if Cycle == 0:
             Sleep_Time *= 60 # sec
-            time.sleep(Sleep_Time)
+            sleep(Sleep_Time)
             self.Input_command("STOP")
         else:
             Sleep_Time = (Cycle / 100 + 0.5) * 60 # sec
-            time.sleep(Sleep_Time)
+            sleep(Sleep_Time)
     
     def Data_Saving(self, filename:str) -> None:
         '''
