@@ -12,10 +12,15 @@ class GHOST:
         Turn input command into byte string, and to the host server
         '''
         sleep(1)
+        print(command)
         self.tn.write(command.encode('ascii') + b"\r\n")
-        sleep(0.5)
-        msg = self.tn.read_very_eager().decode()
-        print("Msg = ", msg)
+        
+        while True:
+            sleep(0.5)
+            msg = self.tn.read_very_eager().decode()
+            if msg != "":
+                print("Msg = ", msg)
+                break
         return msg
     
     def Take_Control(self) -> None:
@@ -34,7 +39,7 @@ class GHOST:
         except:
             self.Input_command(r"WDIR D:\Data")
     
-    def Measurement_Start(self, Cycle:int = 0, Sleep_Time:int = 300) -> None:
+    def Measurement_Start(self, Cycle:int = 0, Sleep_Time:int = 10) -> None:
         '''
         Start BLS measurement
         100 cycle is about 1 min
@@ -101,9 +106,9 @@ if __name__ == "__main__":
     myGhost = GHOST()
     dir = r"D:\DATA"
 #    myGhost.Set_Saving_Directory(dir = dir)
-#    myGhost.Measurement_Start(Cycle = 10)
-#    myGhost.Data_Saving(filename = "20220311test-3") #檔名不能有空白鍵
+    myGhost.Measurement_Start(Sleep_Time = 1)
+    myGhost.Data_Saving(filename = "RF_5.0_GHz_Power_0.0_dBm_at_(0,0)_for_1.0_min") #檔名不能有空白鍵
 #    print("file saved!!")
-    res = myGhost.Get_Current_Spectrum()
-#    myGhost.Clear_Spectrum()
+    # res = myGhost.Get_Current_Spectrum()
+    myGhost.Clear_Spectrum()
     myGhost.Close()
