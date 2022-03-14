@@ -15,6 +15,7 @@ class Opto_Stage:
         '''
         Execute Command
         '''
+        time.sleep(0.5)
         self.Instr.write("G:")
     
     def Jogging(self, Direction:chr, Axis:chr) -> None:
@@ -42,7 +43,7 @@ class Opto_Stage:
         Axis can be either X or Y
         '''
         if Axis == "X" or Axis == "Y":
-            self.Instr.write(f"H: {self.Axis_Table[Axis]}")
+            self.Instr.write(f"H:{self.Axis_Table[Axis]}")
     
     def Move_Relative(self, Axis:chr, Direction:chr, Displacement:int) -> None:
         '''
@@ -54,7 +55,7 @@ class Opto_Stage:
         2. um, if it's closed loop
         '''
         if (Axis == "X" or Axis == "Y") and (Direction == "+" or Direction == "-"):
-            self.Instr.write(f"M: {self.Axis_Table[Axis]}{Direction}P {Displacement}")
+            self.Instr.write(f"M:{self.Axis_Table[Axis]}{Direction}P{Displacement}")
             self.Start()
 
     def Move_Absolute(self, Axis:chr, Direction:chr, Position:int):
@@ -62,7 +63,7 @@ class Opto_Stage:
         Move to absolute position
         '''
         if (Axis == "X" or Axis == "Y") and (Direction == "+" or Direction == "-"):
-            self.Instr.write(f"A: {self.Axis_Table[Axis]}{Direction}P {Position}")
+            self.Instr.write(f"A:{self.Axis_Table[Axis]}{Direction}P{Position}")
             self.Start()
 
     def Set_Moving_Speed(self, Axis:chr, Min_Speed:int, Max_Speed:int, Acceleration_Time:int) -> None:
@@ -76,9 +77,9 @@ class Opto_Stage:
         if Min_Speed < 64 and Max_Speed >= 8000:
             return
         if Axis == "X" or Axis == "Y":
-            self.Instr.write(f"D: {self.Axis_Table[Axis]}S{Min_Speed}F{Max_Speed}R{Acceleration_Time}")    
+            self.Instr.write(f"D:{self.Axis_Table[Axis]}S{Min_Speed}F{Max_Speed}R{Acceleration_Time}")    
 
 if __name__ == "__main__":
     mystage = Opto_Stage("GPIB::8::INSTR")
-    mystage.Move_Relative(Axis = "X", Direction = "+", Displacement = 1000)
+    mystage.Move_Absolute(Axis = "X", Direction = "+", Position = 1000)
     
