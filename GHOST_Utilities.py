@@ -100,14 +100,11 @@ class GHOST:
         return data
 
 if __name__ == "__main__":
-    '''
-    switch to not chinese input
-    '''
     myGhost = GHOST()
     dir = r"D:\DATA"
 #    myGhost.Set_Saving_Directory(dir = dir)
     myGhost.Measurement_Start(Sleep_Time = 1)
-    myGhost.Data_Saving(filename = "RF_5.0_GHz_Power_0.0_dBm_at_(0,0)_for_1.0_min") #檔名不能有空白鍵
+    myGhost.Data_Saving(filename = "test") #檔名不能有空白鍵
 #    print("file saved!!")
     # res = myGhost.Get_Current_Spectrum()
     myGhost.Clear_Spectrum()
