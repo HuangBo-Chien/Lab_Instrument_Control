@@ -13,17 +13,24 @@ def Read_Files_And_Plot(Folder:str, fnames:list, freq:float) -> None:
     Read files and plot as 3d map
     '''
     import numpy as np
-    import matplotlib.pyplot as plt
-    from time import sleep
+    import originpro as op
 
-    for fname in fnames:
-        data = np.loadtxt(fname = Folder + fname + ".raw")
-        plt.plot(data[:, 0], data[:, 1])
-        plt.xlabel("Freq (GHz)")
-        plt.ylabel("Count (a.u.)")
-        plt.title(fname)
-        plt.draw()
-        sleep(5)
+    origin = op.set_show()
+    
+    for file in fnames:
+        data = np.loadtxt(fname = Folder + "\\" + file + '.raw')
+        f = data[:, 0]
+        count = data[:, 1]
+
+        worsheet = op.new_sheet(type = 'w')
+        worsheet.from_list(col = 0, data = f, lname = "Frequency", units = "GHz")
+        worsheet.from_list(col = 1, data = count, lname = "Count", units = "a.u.", comments = file)
+
+        gp = op.new_graph()
+        gl = gp[0]
+        gl.add_plot(obj = worsheet, colx = 0, coly = 1)
+        gl.rescale()
+
 
 if __name__ == "__main__":
     
