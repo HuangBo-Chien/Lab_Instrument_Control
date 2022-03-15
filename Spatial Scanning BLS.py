@@ -2,6 +2,7 @@ import GHOST_Utilities
 import SMB100A_Utilities
 import Opto_Stage_Utilities
 from datetime import datetime
+import numpy as np
 '''
 This code is for spatial scanning to measure spatial dependence of magnon signal.
 It requires motorized stages (SHOT-302GS), rf generator (SMB100A), and BLS (Ghost)
@@ -31,18 +32,17 @@ def Read_Files_And_Plot(Folder:str, fnames:list, freq:float) -> None:
         gl.add_plot(obj = worsheet, colx = 0, coly = 1)
         gl.rescale()
 
+def Two_pts():
 
-if __name__ == "__main__":
-    
     BLS = GHOST_Utilities.GHOST()
     RF = SMB100A_Utilities.SMB100A("GPIB::28::INSTR")
     Stages = Opto_Stage_Utilities.Opto_Stage("GPIB::8::INSTR")
 
     # Stages Part
-    Length = int(input("Length of Scanning in X direction (step) = "))
-    Stepx = int(input("Step Size of Scanning in X direction (step) = "))
-    Width = int(input("Length of Scanning in Y direction (step) = "))
-    Stepy = int(input("Step Size of Scanning in Y direction (step) = "))
+    Length = int(input("Length of Scanning in X direction (pulse) = "))
+    Stepx = int(input("Step Size of Scanning in X direction (pulse) = "))
+    Width = int(input("Length of Scanning in Y direction (pulse) = "))
+    Stepy = int(input("Step Size of Scanning in Y direction (pulse) = "))
     # BLS Part
     Time = float(input("Accumulation Time for each BLS Spectrum (min) = "))
     BLS.Set_Saving_Directory("D:\Data")
@@ -61,7 +61,7 @@ if __name__ == "__main__":
         for j in range(0, Width, Stepy):
             print(f"i = {i}, and j = {j}")
             # Stage Part
-            Stages.Move_Relative(Axis = "Y", Direction = "+", Displacement = Stepy)
+            Stages.Move_Relative(Axis = "Y", Displacement = Stepy)
             Stages.Wait_For_Running()
             # File Part
             filename = f"{datetime.today().date()}_Point_{i}_Point_{j}"
@@ -71,11 +71,11 @@ if __name__ == "__main__":
             BLS.Data_Saving(filename = filename)
             BLS.Clear_Spectrum()
             print(f"{filename} is saved!")
-        Stages.Move_Relative(Axis = "Y", Direction = "-", Displacement = Width)
+        Stages.Move_Relative(Axis = "Y", Displacement = -Width)
         Stages.Wait_For_Running()
-        Stages.Move_Relative(Axis = "X", Direction = "+", Displacement = Stepx)
+        Stages.Move_Relative(Axis = "X", Displacement = Stepx)
         Stages.Wait_For_Running()
-    Stages.Move_Relative(Axis = "X", Direction = "-", Displacement = Length)
+    Stages.Move_Relative(Axis = "X", Displacement = -Length)
     Stages.Wait_For_Running()
     
     # Disconnect from BLS
@@ -85,3 +85,72 @@ if __name__ == "__main__":
 
     # Read files and draw a map
     Read_Files_And_Plot(Folder = "D:\Data", fnames = fname_list, freq = Freq)
+
+def Two_vectors_And_Origin():
+    '''
+    Assume the scanned area is a parallelogram.
+    It can be spanned by an origin and two vectors starting from the origin.
+    '''
+    
+    BLS = GHOST_Utilities.GHOST()
+    RF = SMB100A_Utilities.SMB100A("GPIB::28::INSTR")
+    Stages = Opto_Stage_Utilities.Opto_Stage("GPIB::8::INSTR")
+
+    # BLS Part
+    Time = float(input("Accumulation Time for each BLS Spectrum (min) = "))
+    BLS.Set_Saving_Directory("D:\Data")
+    # RF Part
+    Freq = float(input("Frequency of RF (GHz) = "))
+    Power = float(input("Output Power Level of RF (dBm) = "))
+    RF.Set_CW_Freq(Freq = Freq)
+    RF.Set_Output_Power(Power = Power)
+    RF.Set_Output_State(True)
+    # Stage Part
+    vecs = []
+
+    for i in range(2):
+        compx = int(input(f"Input vector {i + 1} x component = "))
+        compy = int(input(f"Input vector {i + 1} y component = "))
+        vecs.append((compx, compy))
+    
+    step1 = int(input("Input the number of step to divide the vector 1 = "))
+    step2 = int(input("Input the number of step to divide the vector 2 = "))
+
+    x0 = int(input("Input origin's x component = "))
+    y0 = int(input("Input origin's y component = "))
+
+    Stages.Move_Absolute(Axis = "X", Position = x0)
+    Stages.Wait_For_Running()
+    Stages.Move_Absolute(Axis = "Y", Position = y0)
+    Stages.Wait_For_Running()
+
+    fname_list = []
+    # Start Scanning
+    for c1 in np.arange(start = 0, stop = 1, step = 1 / step1):
+        for c2 in np.arange(start = 0, stop = 1, step = 1 / step2):
+            x = x0 + c1 * vecs[0][0] + c2 * vecs[1][0]
+            y = y0 + c1 * vecs[0][1] + c2 * vecs[1][1]
+            Stages.Move_Absolute(Axis = "X", Position = x)
+            Stages.Wait_For_Running()
+            Stages.Move_Absolute(Axis = "Y", Position = y)
+            Stages.Wait_For_Running()
+
+            filename = f"{datetime.today().date()}_({x},{y})"
+            fname_list.append(filename)
+
+            BLS.Measurement_Start(Sleep_Time = Time)
+            BLS.Data_Saving(filename = filename)
+            BLS.Clear_Spectrum()
+
+            print(f"{filename} is saved!")
+    
+    # Disconnect from BLS
+    BLS.Close()
+    # Close RF
+    RF.Set_Output_State(False)
+    # Read files and draw a map
+    Read_Files_And_Plot(Folder = "D:\Data", fnames = fname_list, freq = Freq)
+
+if __name__ == "__main__":
+    Two_pts()
+    
