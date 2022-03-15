@@ -46,24 +46,38 @@ class Opto_Stage:
         if Axis == "X" or Axis == "Y":
             self.Instr.write(f"H:{self.Axis_Table[Axis]}")
     
-    def Move_Relative(self, Axis:chr, Direction:chr, Displacement:int) -> None:
+    def Move_Relative(self, Axis:chr, Displacement:int) -> None:
         '''
         Move relative to the current stage position
         Axis can be either X or Y
-        Direction can be either + or -
         The unit of Displacement is
         1. Pulse, if it's open loop
         2. um, if it's closed loop
         '''
-        if (Axis == "X" or Axis == "Y") and (Direction == "+" or Direction == "-"):
-            self.Instr.write(f"M:{self.Axis_Table[Axis]}{Direction}P{Displacement}")
+
+        if Displacement < 0:
+            Direction = "-"
+        else:
+            Direction = "+"
+
+        if (Axis == "X" or Axis == "Y"):
+            self.Instr.write(f"M:{self.Axis_Table[Axis]}{Direction}P{abs(Displacement)}")
             self.Start()
 
-    def Move_Absolute(self, Axis:chr, Direction:chr, Position:int):
+    def Move_Absolute(self, Axis:chr, Position:int):
         '''
         Move to absolute position
+        The unit of Displacement is
+        1. Pulse, if it's open loop
+        2. um, if it's closed loop
         '''
-        if (Axis == "X" or Axis == "Y") and (Direction == "+" or Direction == "-"):
+
+        if Position < 0:
+            Direction = "-"
+        else:
+            Direction = "+"
+
+        if (Axis == "X" or Axis == "Y"):
             self.Instr.write(f"A:{self.Axis_Table[Axis]}{Direction}P{Position}")
             self.Start()
 
