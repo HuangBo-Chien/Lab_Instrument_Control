@@ -78,11 +78,25 @@ class Opto_Stage:
         if Min_Speed < 64 and Max_Speed >= 8000:
             return
         if Axis == "X" or Axis == "Y":
-            self.Instr.write(f"D:{self.Axis_Table[Axis]}S{Min_Speed}F{Max_Speed}R{Acceleration_Time}")    
+            self.Instr.write(f"D:{self.Axis_Table[Axis]}S{Min_Speed}F{Max_Speed}R{Acceleration_Time}")
+    
+    def Set_Number_of_Steps(self, Axis:str, Num_of_Steps:int) -> None:
+        '''
+        Refer to the manual page 27
+        1, 2, 4, 5, 8, 10, 20, 25, 40, 50, 80, 100, 125, 200, 250 are allowed values
+        '''
+        if Axis != "X" and Axis != "Y":
+            return
+        
+        allowed_num_of_steps = set(1, 2, 4, 5, 8, 10, 20, 25, 40, 50, 80, 100, 125, 200, 250)
+
+        if Num_of_Steps in allowed_num_of_steps:
+            self.Instr.write(f"S:{self.Axis_Table[Axis]}{Num_of_Steps}")
 
 if __name__ == "__main__":
     mystage = Opto_Stage("GPIB::8::INSTR")
-    # mystage.Move_Absolute(Axis = "X", Direction = "+", Position = 1000)
-    mystage.Move_Relative(Axis = 'X', Direction = '-', Displacement = 500)
+    mystage.Move_Absolute(Axis = "X", Direction = "+", Position = 0)
+    mystage.Move_Absolute(Axis = "Y", Direction = "+", Position = 0)
+    # mystage.Move_Relative(Axis = 'X', Direction = '-', Displacement = 500)
     mystage.Wait_For_Running()
     
