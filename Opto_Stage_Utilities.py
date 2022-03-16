@@ -78,7 +78,7 @@ class Opto_Stage:
             Direction = "+"
 
         if (Axis == "X" or Axis == "Y"):
-            self.Instr.write(f"A:{self.Axis_Table[Axis]}{Direction}P{Position}")
+            self.Instr.write(f"A:{self.Axis_Table[Axis]}{Direction}P{abs(Position)}")
             self.Start()
 
     def Set_Moving_Speed(self, Axis:chr, Min_Speed:int, Max_Speed:int, Acceleration_Time:int) -> None:
@@ -109,8 +109,9 @@ class Opto_Stage:
 
 if __name__ == "__main__":
     mystage = Opto_Stage("GPIB::8::INSTR")
-    mystage.Move_Absolute(Axis = "X", Direction = "+", Position = 0)
-    mystage.Move_Absolute(Axis = "Y", Direction = "+", Position = 0)
+    mystage.Move_Absolute(Axis = "X", Position = -300)
+    mystage.Wait_For_Running()
+    mystage.Move_Absolute(Axis = "Y", Position = 7900)
     # mystage.Move_Relative(Axis = 'X', Direction = '-', Displacement = 500)
     mystage.Wait_For_Running()
     
