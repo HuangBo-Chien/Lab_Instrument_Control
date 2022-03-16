@@ -126,16 +126,21 @@ def Two_vectors_And_Origin():
 
     fname_list = []
     # Start Scanning
+    i = 0
+    j = 0
     for c1 in np.arange(start = 0, stop = 1, step = 1 / step1):
+        i += 1
+        j = 0
         for c2 in np.arange(start = 0, stop = 1, step = 1 / step2):
-            x = x0 + c1 * vecs[0][0] + c2 * vecs[1][0]
-            y = y0 + c1 * vecs[0][1] + c2 * vecs[1][1]
+            j += 1
+            x = int(x0 + c1 * vecs[0][0] + c2 * vecs[1][0])
+            y = int(y0 + c1 * vecs[0][1] + c2 * vecs[1][1])
             Stages.Move_Absolute(Axis = "X", Position = x)
             Stages.Wait_For_Running()
             Stages.Move_Absolute(Axis = "Y", Position = y)
             Stages.Wait_For_Running()
 
-            filename = f"{datetime.today().date()}_({x},{y})"
+            filename = f"{datetime.today().date()}_({i},{j})"
             fname_list.append(filename)
 
             BLS.Measurement_Start(Sleep_Time = Time)
@@ -152,5 +157,5 @@ def Two_vectors_And_Origin():
     Read_Files_And_Plot(Folder = "D:\Data", fnames = fname_list, freq = Freq)
 
 if __name__ == "__main__":
-    Two_pts()
+    Two_vectors_And_Origin()
     
