@@ -27,7 +27,7 @@ class Model_2182:
             Range = 0
         elif Range > 120:
             Range = 120
-        self.Instr.write(f":SENS:RANG {Range}")
+        self.Instr.write(f":VOLT:RANG {Range}")
     
     def Display(self, Enable:bool = True) -> None:
         '''
@@ -46,7 +46,7 @@ class Model_2182:
             Avg_times = 1
         val = 0
         for _ in range(Avg_times):
-            val += self.Instr.query(":SENS:DATA")
+            val += float(self.Instr.query(":SENS:DATA?"))
             time.sleep(0.1) # sleep for 100 ms
         val /= Avg_times
         return val
@@ -60,30 +60,32 @@ class Model_2182:
             PLC = 0.01
         elif PLC > 60:
             PLC = 60
-        self.Instr.write(f":SENS:NPLC {PLC}")
+        self.Instr.write(f":VOLT:NPLC {PLC}")
     
     def Digital_Filter_Setting(self, Enable:bool = True, Type:int = 0, Count:int = 10, Window:float = 0.01) -> None:
         '''
         Digital filter
         Average readings
         The threshold is determined by the sense range.
+        Type == 0 ---> Moving Average
+        Type == 1 ---> Repeat Average
         e.g.:
         0.01 % of 10 mV is 1 uV
         '''
         if Enable:
-            self.Instr.write(f":SENS:WIND {Window}")
+            self.Instr.write(f":VOLT:DFIL:WIND {Window}")
             if Type == 0:
-                self.Instr.write(":SENS:TCON MOV") # Moving window
+                self.Instr.write(":VOLT:DFIL:TCON MOV") # Moving window
             else:
-                self.Instr.write(":SENS:TCON REP") # Repeating window
+                self.Instr.write(":VOLT:DFIL:TCON REP") # Repeating window
             if Count < 1:
                 Count = 1
             elif Count > 100:
                 Count = 100
-            self.Instr.write(f":SENS:COUN {Count}")
-            self.Instr.write(":SENS:DFIL ON")
+            self.Instr.write(f":VOLT:DFIL:COUN {Count}")
+            self.Instr.write(":VOLT:DFIL ON")
         else:
-            self.Instr.write(":SENS:DFIL OFF")
+            self.Instr.write(":VOLT:DFIL OFF")
     
     def Analog_Filter_Setting(self, Enable:bool = False):
         '''
@@ -94,11 +96,16 @@ class Model_2182:
         See manual 3-8 ~ 3-10
         '''
         if Enable:
-            self.Instr.write(f"SENS:LPAS ON")
+            self.Instr.write(f"VOLT:LPAS ON")
         else:
-            self.Instr.write(f"SENS:LPAS OFF")
+            self.Instr.write(f"VOLT:LPAS OFF")
         
 if __name__ == "__main__":
     my_Model_2182 = Model_2182("GPIB0::7::INSTR")
+    my_Model_2182.Select_Volt_Range(Range = 0.01)
+    my_Model_2182.Select_PLC(PLC = 2)
+    my_Model_2182.Digital_Filter_Setting(Count = 10)
+    my_Model_2182.Analog_Filter_Setting(Enable = True)
+    print(my_Model_2182.Sense_Volt())
 
     
