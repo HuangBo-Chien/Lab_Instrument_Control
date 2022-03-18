@@ -2,7 +2,7 @@ import pyvisa as pv
 
 rm = pv.ResourceManager()
 
-class Series_83650B:
+class HP_83650B:
 
     def __init__(self, GPIB_Addr:str) -> None:
         self.GPIB_Addr = GPIB_Addr
@@ -103,4 +103,7 @@ class AM_Modulation:
     
 
 if __name__ == "__main__":
-    pass
+    my83650B = HP_83650B("GPIB::19::INSTR")
+    my83650B.Power_Output(Switch = True)
+    my83650B.Set_Power_Level(Lev = 15)
+    my83650B.Set_CW_Freq(Freq = 9, Unit = 3)
