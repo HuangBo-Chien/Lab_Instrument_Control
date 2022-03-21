@@ -1,8 +1,5 @@
-'''
-Before using program to control model 2182, please make sure it has been correctly connected to the computer via GPIB by clicking "scan for instrument" button on NIMAX
-'''
 import pyvisa as pv
-import time
+from time import sleep
 
 rm = pv.ResourceManager()
 
@@ -20,8 +17,11 @@ class Model_2182:
     
     def Select_Volt_Range(self, Range:float = 10) -> None:
         '''
-        Set voltage range for measurement
-        On the front panel, 100V, 10V, 1V, 0.1V, 0.01V can be chosen
+        Set voltage range for measurement.
+
+        Parameters
+        ===========
+            Range can be one of the values in (100, 10, 1, 0.1, 0.01). and the unit is Volt.
         '''
         if Range < 0:
             Range = 0
@@ -32,6 +32,10 @@ class Model_2182:
     def Display(self, Enable:bool = True) -> None:
         '''
         Set the display on the front panel to be on/off.
+
+        Parameter
+        ========
+            Enable == True/False ---> Display on/off
         '''
         if Enable:
             self.Instr.write(":DISP:ENAB ON")
@@ -40,21 +44,38 @@ class Model_2182:
     
     def Sense_Volt(self, Avg_times:int =  1) -> float:
         '''
-        Retrieve data multiple times and take the average
+        Retrieve data multiple times and take the average.
+
+        Parameter
+        ========
+        Avg_times can be any positive integers.
+        
+        Between two consecutive measurements, this program sleeps for 0.1 sec.
         '''
         if Avg_times < 1:
             Avg_times = 1
         val = 0
         for _ in range(Avg_times):
             val += float(self.Instr.query(":SENS:DATA?"))
-            time.sleep(0.1) # sleep for 100 ms
+            sleep(0.1) # sleep for 100 ms
         val /= Avg_times
         return val
     
     def Select_PLC(self, PLC:float = 1) -> None:
         '''
-        In Taiwan, our electricity is 60 Hz
-        PLC 1 or 2 is recommended according to the manual
+        Select power line cycle (PLC).
+
+        Parameter
+        ========
+            PLC can be any decimal numbers from 0.01 to 120.
+
+        Notes
+        =====
+            Note that, in Taiwan, our ac electricity freq is 60 Hz, which implies 1 PLC = 1 / 60 sec ~ 0.0167 sec.
+            
+            It would be better to set PLC to 1 or 2 for the instrument to suppress noises from power line efficiently without waiting too much time.
+
+            For example, if PLC has been set to 1, then it would take 0.0167 sec to determine a value.
         '''
         if PLC < 0.01:
             PLC = 0.01
@@ -64,13 +85,27 @@ class Model_2182:
     
     def Digital_Filter_Setting(self, Enable:bool = True, Type:int = 0, Count:int = 10, Window:float = 0.01) -> None:
         '''
-        Digital filter
-        Average readings
-        The threshold is determined by the sense range.
-        Type == 0 ---> Moving Average
-        Type == 1 ---> Repeat Average
-        e.g.:
-        0.01 % of 10 mV is 1 uV
+        Use internal digital filter to average readings.
+
+        Parameters
+        ======
+            Enable == True/False ---> Turn on/off the filter
+            
+            Type == 0/1 ---> Moving Average/Repeat Average
+
+            Count can be any positive integer.
+
+            Window can be one of the values in (10, 1, 0.1, 0.01), and the unit is %.
+
+        Notes
+        =====
+            The window percentage means the percentage of the sense voltage range.
+            
+            For example, if the voltage range is 0.01 V, and the window is 0.01 %.
+
+            Then the filter threshold is 0.01 V * 0.01 % = 1 uV. This value is the minimal sensitivity.
+            
+            Therefore, if your signal is less than 1 uV, the window might not be that helpful.
         '''
         if Enable:
             self.Instr.write(f":VOLT:DFIL:WIND {Window}")
@@ -89,11 +124,23 @@ class Model_2182:
     
     def Analog_Filter_Setting(self, Enable:bool = False):
         '''
-        Analog Filter
-        This filter could only be used when the sense range is 10 mV.
-        And it would take additional 125 ms for the reading to settle.
-        Therefore, the reading rate could be greatly reduced.
-        See manual 3-8 ~ 3-10
+        Use internal analog filter to suppress noises.
+
+        Parameter
+        =====
+            Enable == True/False ---> Turn on/off the filter.
+
+        Notes
+        =====
+            This filter could only be appied when the sense range is 10 mV.
+
+            And it would take additional 125 ms for the reading to settle.
+            
+            Therefore, the reading rate could be greatly reduced.
+            
+            For more details, see manual 3-8 ~ 3-10.
+
+            My personaly experience is this filter is capable of dramatically filter out noises from the power noise of electromagnet.
         '''
         if Enable:
             self.Instr.write(f"VOLT:LPAS ON")
