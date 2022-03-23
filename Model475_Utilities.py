@@ -17,14 +17,27 @@ class Model_475:
     def Set_Unit(self, Mode:int) -> None:
         '''
         Set the unit of magnetic field
+
+        Mode == 1 ---> G
+
+        Mode == 2 ---> T
+        
+        Mode == 3 ---> Oe
+        
+        Mode == 4 ---> A/m
+
+        Depending on the value, the unit could have an additional kilo- prefix. i.e. Oe becomes kOe
         '''
-        self.Instr.write(f"UNIT {Mode}")
+        if 1 <= Mode <= 4:
+            self.Instr.write(f"UNIT {Mode}")
     
     def Set_Range(self, Mode:int) -> None:
         '''
         Set the range of measurement
+
         Mode can be 1 ~ 5 (from lowest to highest)
         However, the range is probe dependent.
+
         Please check the actual range manually.
         '''
         if 1 <= Mode <= 5:
@@ -46,23 +59,33 @@ class Model_475:
     def Measurement_Setting(self, Mode:int, Resolution:int = 1, RMS_Filter_mode:int = 1, Peak_Mode:int = 1, Peak_Display:int = 1) -> None:
         '''
         Set measurement mode
+
         Mode == 1 ---> DC
+
         Mode == 2 ---> RMS
+        
         Mode == 3 ---> Peak
 
         Resolution == 1 ---> 3 digits
+        
         Resolution == 2 ---> 4 digits
+        
         Resolution == 3 ---> 5 digits
 
         RMS Filter == 1 ---> Wide Band
+        
         RMS Filter == 2 ---> Narrow Band
+        
         RMS Filter == 3 ---> Low Pass
 
         Peak Mode == 1 ---> Periodic
+        
         Peak Mode == 2 ---> Pulse
 
         Peak Display == 1 ---> Positive
+        
         Peak Display == 2 ---> Negative
+        
         Peak Display == 3 ---> Both
         '''
         if Mode < 1 or Mode > 3:
@@ -108,4 +131,7 @@ class Model_475:
         return temp
 
 if __name__ == "__main__":
-    pass
+    my475 = Model_475("GPIB::14::INSTR")
+    my475.Set_Unit(Mode = 3)
+    my475.Set_Range(Mode = 4)
+    print(my475.Read_Field())
