@@ -158,4 +158,3 @@ def Two_vectors_And_Origin():
 
 if __name__ == "__main__":
     Two_vectors_And_Origin()
-    
