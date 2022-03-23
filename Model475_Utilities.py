@@ -18,6 +18,8 @@ class Model_475:
         '''
         Set the unit of magnetic field
 
+        Parameter
+        =========
         Mode == 1 ---> G
 
         Mode == 2 ---> T
@@ -35,10 +37,13 @@ class Model_475:
         '''
         Set the range of measurement
 
+        Parameter
+        ==========
         Mode can be 1 ~ 5 (from lowest to highest)
-        However, the range is probe dependent.
 
-        Please check the actual range manually.
+        Notes
+        ========
+        The range is probe dependent. Please check the actual range manually.
         '''
         if 1 <= Mode <= 5:
             self.Instr.write(f"RANGE {Mode}")
@@ -60,6 +65,8 @@ class Model_475:
         '''
         Set measurement mode
 
+        Parameters
+        ========
         Mode == 1 ---> DC
 
         Mode == 2 ---> RMS
