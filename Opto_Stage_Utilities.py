@@ -21,8 +21,12 @@ class Opto_Stage:
     def Jogging(self, Direction:chr, Axis:chr) -> None:
         '''
         Move steadily toward a specific direction along an axis.
-        Direction can be + or -
-        Axis can be X or Y
+        
+        Parameters
+        ===========
+            Direction == "+"/"-" ---> going toward positive/negative.
+
+            Axis == "X"/"Y" ---> moving X/Y direction.
         '''
         self.Instr.write(f"J:{self.Axis_Table[Axis]}{Direction}")
 
@@ -41,7 +45,10 @@ class Opto_Stage:
     def Homing(self, Axis:chr) -> None:
         '''
         Return to mechanical origin
-        Axis can be either X or Y
+
+        Parameter
+        ===========
+            Axis == "X"/"Y" ---> moving X/Y direction.
         '''
         if Axis == "X" or Axis == "Y":
             self.Instr.write(f"H:{self.Axis_Table[Axis]}")
@@ -49,10 +56,16 @@ class Opto_Stage:
     def Move_Relative(self, Axis:chr, Displacement:int) -> None:
         '''
         Move relative to the current stage position
-        Axis can be either X or Y
-        The unit of Displacement is
-        1. Pulse, if it's open loop
-        2. um, if it's closed loop
+        
+        Parameter
+        ===========
+            Axis == "X"/"Y" ---> moving X/Y direction.
+
+        Notes
+        ===========
+            The unit of Displacement is
+            1. Pulse, if it's open loop
+            2. um, if it's closed loop
         '''
 
         if Displacement < 0:
@@ -67,9 +80,16 @@ class Opto_Stage:
     def Move_Absolute(self, Axis:chr, Position:int):
         '''
         Move to absolute position
-        The unit of Displacement is
-        1. Pulse, if it's open loop
-        2. um, if it's closed loop
+
+        Parameter
+        ===========
+            Axis == "X"/"Y" ---> moving X/Y direction.
+
+        Notes
+        ===========
+            The unit of Displacement is
+            1. Pulse, if it's open loop
+            2. um, if it's closed loop
         '''
 
         if Position < 0:
@@ -83,7 +103,11 @@ class Opto_Stage:
 
     def Set_Moving_Speed(self, Axis:chr, Min_Speed:int, Max_Speed:int, Acceleration_Time:int) -> None:
         '''
-        Set moveing speed
+        Set moveing speed.
+
+        Parameters
+        ========
+            Axis == "X"/"Y" ---> moving X/Y direction.
         '''
         if Min_Speed < 1 or Min_Speed > 500000 or Max_Speed < 1 or Max_Speed > 500000 or Acceleration_Time < 1 or Acceleration_Time > 1000:
             return
