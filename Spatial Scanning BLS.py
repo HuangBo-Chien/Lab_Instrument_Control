@@ -1,6 +1,6 @@
-import GHOST_Utilities
-import SMB100A_Utilities
-import Opto_Stage_Utilities
+import TableStable.GHOST_Utilities as GHOST_Utilities
+import Rohde_and_Schwarz.SMB100A_Utilities as SMB100A_Utilities
+import Opto_Sigma.Opto_Stage_Utilities as Opto_Stage_Utilities
 from datetime import datetime
 import numpy as np
 '''
