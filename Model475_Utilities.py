@@ -20,15 +20,17 @@ class Model_475:
 
         Parameter
         =========
-        Mode == 1 ---> G
+            Mode == 1 ---> G
 
-        Mode == 2 ---> T
+            Mode == 2 ---> T
+            
+            Mode == 3 ---> Oe
+            
+            Mode == 4 ---> A/m
         
-        Mode == 3 ---> Oe
-        
-        Mode == 4 ---> A/m
-
-        Depending on the value, the unit could have an additional kilo- prefix. i.e. Oe becomes kOe
+        Notes
+        =====
+            Depending on the value, the unit could have an additional kilo- prefix. i.e. Oe becomes kOe
         '''
         if 1 <= Mode <= 4:
             self.Instr.write(f"UNIT {Mode}")
@@ -39,11 +41,11 @@ class Model_475:
 
         Parameter
         ==========
-        Mode can be 1 ~ 5 (from lowest to highest)
+            Mode can be 1 ~ 5 (from lowest to highest)
 
         Notes
         ========
-        The range is probe dependent. Please check the actual range manually.
+            The range is probe dependent. Please check the actual range manually.
         '''
         if 1 <= Mode <= 5:
             self.Instr.write(f"RANGE {Mode}")
@@ -67,33 +69,33 @@ class Model_475:
 
         Parameters
         ========
-        Mode == 1 ---> DC
+            Mode == 1 ---> DC
 
-        Mode == 2 ---> RMS
-        
-        Mode == 3 ---> Peak
+            Mode == 2 ---> RMS
+            
+            Mode == 3 ---> Peak
 
-        Resolution == 1 ---> 3 digits
-        
-        Resolution == 2 ---> 4 digits
-        
-        Resolution == 3 ---> 5 digits
+            Resolution == 1 ---> 3 digits
+            
+            Resolution == 2 ---> 4 digits
+            
+            Resolution == 3 ---> 5 digits
 
-        RMS Filter == 1 ---> Wide Band
-        
-        RMS Filter == 2 ---> Narrow Band
-        
-        RMS Filter == 3 ---> Low Pass
+            RMS Filter == 1 ---> Wide Band
+            
+            RMS Filter == 2 ---> Narrow Band
+            
+            RMS Filter == 3 ---> Low Pass
 
-        Peak Mode == 1 ---> Periodic
-        
-        Peak Mode == 2 ---> Pulse
+            Peak Mode == 1 ---> Periodic
+            
+            Peak Mode == 2 ---> Pulse
 
-        Peak Display == 1 ---> Positive
-        
-        Peak Display == 2 ---> Negative
-        
-        Peak Display == 3 ---> Both
+            Peak Display == 1 ---> Positive
+            
+            Peak Display == 2 ---> Negative
+            
+            Peak Display == 3 ---> Both
         '''
         if Mode < 1 or Mode > 3:
             return
@@ -110,8 +112,8 @@ class Model_475:
     
     def Read_Freq(self) -> float:
         '''
-        Measure AC field freq (Hz)
-        It can be used only when the measurement mode is RMS
+        Measure AC field freq (Hz).
+        It can be used only when the measurement mode is RMS.
         '''
         freq = float(self.Instr.query("RDGFRQ?"))
         return freq
