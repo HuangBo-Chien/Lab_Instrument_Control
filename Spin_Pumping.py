@@ -1,16 +1,16 @@
-import HP83650B_Utilities
-import Kepco_BOP_Utilities
-import Model_2182_Utilities
-import Model475_Utilities
+from HP.HP83650B_Utilities import HP_83650B
+from Kepco.Kepco_BOP_Utilities import Kepco_BOP
+from Keithley.Model_2182_Utilities import Model_2182
+from LakeShore.Model475_Utilities import Model_475
 import numpy as np
 from time import sleep
 import matplotlib.pyplot as plt
 
 # Global
-GM = Model475_Utilities.Model_475("GPIB::14::INSTR")
-VM = Model_2182_Utilities.Model_2182("GPIB::7::INSTR")
-Kepco = Kepco_BOP_Utilities.Kepco_BOP("GPIB::6::INSTR")
-RF = HP83650B_Utilities.HP_83650B("GPIB::19::INSTR")
+GM = Model_475("GPIB::14::INSTR")
+VM = Model_2182("GPIB::7::INSTR")
+Kepco = Kepco_BOP("GPIB::6::INSTR")
+RF = HP_83650B("GPIB::19::INSTR")
 
 def GM_Setting():
 
