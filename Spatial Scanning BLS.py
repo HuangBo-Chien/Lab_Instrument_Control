@@ -1,12 +1,12 @@
-import TableStable.GHOST_Utilities as GHOST_Utilities
-import Rohde_and_Schwarz.SMB100A_Utilities as SMB100A_Utilities
-import Opto_Sigma.Opto_Stage_Utilities as Opto_Stage_Utilities
+from TableStable.GHOST_Utilities import GHOST
+from Rohde_and_Schwarz.SMB100A_Utilities import SMB100A
+from Opto_Sigma.Opto_Stage_Utilities import Opto_Stage
 from datetime import datetime
 import numpy as np
 '''
 This code is for spatial scanning to measure spatial dependence of magnon signal.
 It requires motorized stages (SHOT-302GS), rf generator (SMB100A), and BLS (Ghost)
-To control SHOT-302GS, it should be setted to HOST mode.
+To control SHOT-302GS, it should be set to HOST mode.
 '''
 
 def Read_Files_And_Plot(Folder:str, fnames:list, freq:float) -> None:
@@ -34,9 +34,9 @@ def Read_Files_And_Plot(Folder:str, fnames:list, freq:float) -> None:
 
 def Two_pts():
 
-    BLS = GHOST_Utilities.GHOST()
-    RF = SMB100A_Utilities.SMB100A("GPIB::28::INSTR")
-    Stages = Opto_Stage_Utilities.Opto_Stage("GPIB::8::INSTR")
+    BLS = GHOST()
+    RF = SMB100A("GPIB::28::INSTR")
+    Stages = Opto_Stage("GPIB::8::INSTR")
 
     # Stages Part
     Length = int(input("Length of Scanning in X direction (pulse) = "))
@@ -92,9 +92,9 @@ def Two_vectors_And_Origin():
     It can be spanned by an origin and two vectors starting from the origin.
     '''
     
-    BLS = GHOST_Utilities.GHOST()
-    RF = SMB100A_Utilities.SMB100A("GPIB::28::INSTR")
-    Stages = Opto_Stage_Utilities.Opto_Stage("GPIB::8::INSTR")
+    BLS = GHOST()
+    RF = SMB100A("GPIB::28::INSTR")
+    Stages = Opto_Stage("GPIB::8::INSTR")
 
     # BLS Part
     Time = float(input("Accumulation Time for each BLS Spectrum (min) = "))
